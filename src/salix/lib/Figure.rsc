@@ -7,7 +7,7 @@
 }
 @contributor{Bert Lisser - Bert.Lisser@cwi.nl (CWI)}
 @contributor{Paul Klint - Paul.Klint@cwi.nl - CWI}
-module salix::Figure
+module salix::lib::Figure
 
 import util::Math;
 import Prelude;

@@ -1,13 +1,13 @@
 module salix::demo::figure::ResizeTest
 import util::Math;
-import salix::Figure;
+import salix::lib::Figure;
 import salix::HTML;
 import salix::Core;
 import salix::App;
-import salix::LayoutFigure;
+import salix::lib::LayoutFigure;
+import salix::lib::RenderFigure;
 
 import salix::Slider;
-
 
 
 alias Model = tuple[int width, int height];
@@ -46,7 +46,7 @@ Figure testLayout2(Model m) = hcat(figs=[testLayout(m), testLayout(m)]);
 Figure testLayout(Model m) {
       return 
       vcat(figs=[box(lineColor="black"), 
-           hcat(figs = [shapes::Figure::circle(lineColor="blue"), shapes::Figure::ellipse(cx=40, cy = 90, lineColor="green")]),
+           hcat(figs = [salix::Figure::circle(lineColor="blue"), salix::Figure::ellipse(cx=40, cy = 90, lineColor="green")]),
            box(lineColor="red")]);
       }
       
@@ -76,10 +76,13 @@ Figure storm(Model m) {
  void myView(Model m) {
     div(() {
         h2("Figure using SVG");
-        fig(storm(m));
+        // fig(storm(m));
+        salix::lib::RenderFigure::figure(m.width, m.height, (Fig f) {
+              boxExamples(f);
+      });
         slider([[
                   [<resizeX, 0, "width:", 0, 1600, 50, m.width, "0", "1600"> ]
-                 ,[<resizeY, 0, "height:", 0, 1600, 50, m.height>,"0", "1600" ]
+                 ,[<resizeY, 0, "height:", 0, 1600, 50, m.height,"0", "1600"> ]
                  ]]);   
          });  
     }
@@ -97,3 +100,29 @@ public void main() {
      c.stop();
      c.serve();
      }
+     
+ void boxExamples(Fig f) {
+  f.vcat(vgap(10), () {
+    f.box(size(<150,50>), fillColor("lightGray"));
+    f.box(size(<150,50>), fillColor("lightGray"), () {
+      f.box(shrink(0.8), fillColor("green"));
+    });
+    
+    f.box(size(<150, 50>), fillColor("lightGray"), () {
+      f.box(shrink(0.8), align(<0, 0>), fillColor("green"));
+    });
+    
+    f.box(grow(1.2), fillColor("blue"), () {
+      f.box(size(<150, 50>), fillColor("lightGray"));
+    });
+    
+    f.box(lineColor("black"), () {
+      f.box(lineColor("black"), shrink(0.5), () {
+        f.box(lineColor("black"), shrink(0.5), () {
+          f.box(lineColor("black"), shrink(0.5));
+        });
+      });
+    });
+    
+  });
+}

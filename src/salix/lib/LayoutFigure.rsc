@@ -1,11 +1,11 @@
-module salix::LayoutFigure
+module salix::lib::LayoutFigure
 import util::Math;
 import salix::SVG;
 import salix::HTML;
 import salix::App;
 import salix::Core;
 import salix::Node;
-import salix::Figure;
+import salix::lib::Figure;
 import salix::lib::Dagre;
 import salix::ParseHtml;
 import util::Reflective;
@@ -69,7 +69,7 @@ str toP(num e) {
    return r;
    }
    
-list[value] fromFigureAttributesToSalix(f:shapes::Figure::rotate(num angle, Figure g)) {
+list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::rotate(num angle, Figure g)) {
    list[value] r =[];
    num lwo = getLineWidth(f);
    num alpha = 180*angle/PI();
@@ -88,13 +88,13 @@ list[value] fromFigureAttributesToSalix(f:shapes::Figure::rotate(num angle, Figu
    return r; 
    }
    
-list[value] fromFigureAttributesToSalix(f:shapes::Figure::at(num x, num y, Figure g)) {
+list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::at(num x, num y, Figure g)) {
    list[value] r =[];
    r+= salix::SVG::transform("translate(<toP(x)>, <toP(y)>)");         
    return r; 
    }
    
-list[value] fromFigureAttributesToSalix(f:shapes::Figure::circle()) {
+list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::circle()) {
    list[value] r =[];
    num lwo = getLineWidth(f);
    if (f.r<0 && f.width>=0 && f.height>=0) {
@@ -109,7 +109,7 @@ list[value] fromFigureAttributesToSalix(f:shapes::Figure::circle()) {
    return r; 
    }
    
-list[value] fromFigureAttributesToSalix(f:shapes::Figure::ellipse()) {
+list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::ellipse()) {
    list[value] r =[];
    num lwo = getLineWidth(f);
         if (f.rx<0 && f.width>=0) {
@@ -132,7 +132,7 @@ list[value] fromFigureAttributesToSalix(f:shapes::Figure::ellipse()) {
    return r; 
    } 
    
- list[value] fromFigureAttributesToSalix(f:shapes::Figure::path(list[str] curve),
+ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::path(list[str] curve),
     list[str] refs) {
    list[value] r =[];
    if (f.width>=0) r+= salix::SVG::width("<f.width>"); 
@@ -152,7 +152,7 @@ list[value] fromFigureAttributesToSalix(f:shapes::Figure::ellipse()) {
    
 str points2str(Points points) = "<for(p<-points){> <toP(p[0])>,<toP(p[1])>  <}>";
  
-list[value] fromFigureAttributesToSalix(f:shapes::Figure::polygon(Points curve), list[str] refs) {
+list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::polygon(Points curve), list[str] refs) {
    list[value] r =[];
    if (f.width>=0) r+= salix::SVG::width("<f.width>"); 
    if (f.height>=0) r+= salix::SVG::height("<f.height>");
@@ -169,7 +169,7 @@ list[value] fromFigureAttributesToSalix(f:shapes::Figure::polygon(Points curve),
    return r; 
    } 
    
-list[value] fromFigureAttributesToSalix(f:shapes::Figure::polyline(Points curve), list[str] refs) {
+list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::polyline(Points curve), list[str] refs) {
    list[value] r =[];
    if (f.width>=0) r+= salix::SVG::width("<f.width>"); 
    if (f.height>=0) r+= salix::SVG::height("<f.height>");
@@ -187,7 +187,7 @@ list[value] fromFigureAttributesToSalix(f:shapes::Figure::polyline(Points curve)
    }   
 
    
-list[value] fromFigureAttributesToSalix(f:shapes::Figure::ngon(),
+list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::ngon(),
         list[str] curve) {
    list[value] r =[];
    num lwo = f.lineWidth/cos(PI()/f.n); 
@@ -332,13 +332,13 @@ void() tableRows(Figure f) {
 bool isGrid(Figure f) = hcat():=f || vcat():= f || grid():=f;
     
 num getGrowFactor(Figure f, Figure g) {
-    if ((shapes::Figure::ellipse():=f|| shapes::Figure::ngon():=f)&&(box():=g || isGrid(g))) return sqrt(2);
-    if (shapes::Figure::circle():=f &&  (shapes::Figure::ngon():=g || shapes::Figure::ngon():=g)) return 1/sqrt(2);
+    if ((salix::lib::Figure::ellipse():=f|| salix::lib::Figure::ngon():=f)&&(box():=g || isGrid(g))) return sqrt(2);
+    if (salix::lib::Figure::circle():=f &&  (salix::lib::Figure::ngon():=g || salix::lib::Figure::ngon():=g)) return 1/sqrt(2);
     return 1;
     }
     
-bool hasFigField(Figure f) = root():=f || box():=f || shapes::Figure::circle():=f || shapes::Figure::ellipse():=f 
-       || shapes::Figure::ngon():=f;
+bool hasFigField(Figure f) = root():=f || box():=f || salix::lib::Figure::circle():=f || salix::lib::Figure::ellipse():=f 
+       || salix::lib::Figure::ngon():=f;
  
  
 Figure adjustParameters(Figure f) {      
@@ -360,7 +360,7 @@ Figure pullDim(Figure f:path(list[str] _)) {
       return f;
       }
       
- Figure pullDim(Figure f:shapes::Figure::graph()) {
+ Figure pullDim(Figure f:salix::lib::Figure::graph()) {
       f = adjustParameters(f);
       list[tuple[str, Figure]] r = [];
       for (tuple[str id, Figure fig] d<-f.nodes) {
@@ -428,10 +428,10 @@ Figure pullDim(Figure f:rotate(num angle, Figure g)) {
       
 default Figure pullDim(Figure f) {
      f = adjustParameters(f); 
-     if ((shapes::Figure::circle():=f || shapes::Figure::ngon():=f) && f.width<0 && f.height<0 && f.r>=0) {
+     if ((salix::lib::Figure::circle():=f || salix::lib::Figure::ngon():=f) && f.width<0 && f.height<0 && f.r>=0) {
             f.width = 2 * f.r; f.height = 2 * f.r;
         }
-     if (shapes::Figure::ellipse():=f) {
+     if (salix::lib::Figure::ellipse():=f) {
            if (f.width<0 && f.rx>=0) {
               f.width = 2 * f.rx; 
               }
@@ -448,7 +448,7 @@ default Figure pullDim(Figure f) {
         num paddingY= g.padding_top+g.padding_bottom;
         if (f.width<0 && g.width>=0) f.width = f.hgrow*getGrowFactor(f, g)*(g.width + lwi+ lwo)+paddingX;
         if (f.height<0 && g.height>=0) f.height = f.vgrow*getGrowFactor(f, g)*(g.height + lwi + lwo)+paddingY;
-        if (f.width>0 && f.height>0 && (shapes::Figure::circle():=f)) {
+        if (f.width>0 && f.height>0 && (salix::lib::Figure::circle():=f)) {
             num width = f.width; num height = f.height;
             f.width = diag(width, height);
             f.height = diag(width, height);
@@ -595,7 +595,7 @@ list[list[Figure]] expand(list[list[Figure]] m) {
     return f;
     }
     
- Figure pushDim(Figure f:shapes::Figure::graph()) {
+ Figure pushDim(Figure f:salix::lib::Figure::graph()) {
       f = adjustParameters(f);
       list[tuple[str, Figure]] r = [];
       for (tuple[str id, Figure fig] d<-f.nodes) {
@@ -710,9 +710,9 @@ void eval(Figure f:overlay()) {svg(svgSize(f)+[(){for (g<-f.figs) {svg(svgSize(g
 
 void eval(Figure f:box()) {\rect(fromFigureAttributesToSalix(f));if (emptyFigure()!:=f.fig) innerFig(f, f.fig)();}
 
-void eval(Figure f:shapes::Figure::circle()) {salix::SVG::circle(fromFigureAttributesToSalix(f));if (emptyFigure()!:=f.fig) innerFig(f, f.fig)();}
+void eval(Figure f:salix::lib::Figure::circle()) {salix::SVG::circle(fromFigureAttributesToSalix(f));if (emptyFigure()!:=f.fig) innerFig(f, f.fig)();}
 
-void eval(Figure f:shapes::Figure::ellipse()) {salix::SVG::ellipse(fromFigureAttributesToSalix(f));if (emptyFigure()!:=f.fig) innerFig(f, f.fig)();}
+void eval(Figure f:salix::lib::Figure::ellipse()) {salix::SVG::ellipse(fromFigureAttributesToSalix(f));if (emptyFigure()!:=f.fig) innerFig(f, f.fig)();}
 
 void eval(Figure f:htmlText(str s)) {
      num lw = getLineWidth(f);
@@ -845,7 +845,7 @@ void eval(Figure f:polyline(Points _)) {
       return "rect";
       }
                    
- void eval(Figure f:shapes::Figure::graph()) {
+ void eval(Figure f:salix::lib::Figure::graph()) {
                   int graphCode =  getFingerprintNode(f);
                   str graphId = ((graphCode>0)?"graph<graphCode>":"graphX<(-graphCode)>");
                   dagre(graphId, width("<f.width>"), height("<f.height>"), (N n, E e) {
@@ -873,7 +873,7 @@ void eval(Figure f:polyline(Points _)) {
                         });
                   }
                   
-void eval(Figure f:shapes::Figure::rotate(num angle, Figure g)) {
+void eval(Figure f:salix::lib::Figure::rotate(num angle, Figure g)) {
         salix::SVG::g(fromFigureAttributesToSalix(f)+[(){
             salix::SVG::circle(fromFigureAttributesToSalix(f));
            if (emptyFigure()!:=g) innerFig(f, g)();
