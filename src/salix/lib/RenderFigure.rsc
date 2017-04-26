@@ -46,10 +46,15 @@ data FProp
   | clipPath(list[str] path)
   | rounded(tuple[int r1, int r2] rounded)
   | size(tuple[int r1, int r2] size)
+  | viewBox(tuple[num x, num y, num width, num height] viewBox)
+  | style(lrel[str key, str val] ccs)
   ; 
   
 alias FigF = void(list[value]);
 alias HtmlF = void(int, int, void()); 
+alias FigF1 = void(num, list[value]);
+alias FigF2 = void(num, num, list[value]);
+alias FigFpoints = void(Points, list[value]);
 
 alias Fig = tuple[
 
@@ -58,8 +63,11 @@ alias Fig = tuple[
   FigF ellipse,
   FigF circle,
   FigF ngon,
-  FigF polygon,
+  FigFpoints polygon,
   
+  // Transform
+  FigF1 rotate,
+  FigF2 at, 
   
   //FigF shape, // needs nesting with start/mid/end marker
   //FigF path, // needs nesting with start/mid/end marker
@@ -82,7 +90,6 @@ data Figure
 Figure setProps(Figure f, list[value] vals) {
   map[str,value] update(map[str,value] kws, FProp fp)
     = kws + (getName(fp): getChildren(fp)[0]); // assumes all props have 1 arg
-    
   return ( f | setKeywordParameters(it, update(getKeywordParameters(it), fp)) | FProp fp <- vals );
 }
 
@@ -117,14 +124,16 @@ void figure(num w, num h, void(Fig) block) {
     if (vals != [], void() block := vals[-1]) {
       block();
     }
-    add(setProps(pop(), vals));
+    add(setProps(pop(), vals));  
   }
   
   void _box(value vals...) = makeFig(Figure::box(), vals);
   void _ellipse(value vals...) = makeFig(Figure::ellipse(), vals);
   void _circle(value vals...) = makeFig(Figure::circle(), vals);
   void _ngon(value vals...) = makeFig(Figure::ngon(), vals);
-  void _polygon(value vals...) = makeFig(Figure::polygon(), vals);
+  void _polygon(Points points, value vals...) = makeFig(Figure::polygon(points), vals);
+  void _rotate(num angle, value vals...) = makeFig(Figure::rotate(angle), vals);
+  void _at(num x, num y, value vals...) = makeFig(Figure::at(x, y), vals);
   
   // vs should be keyword arg
   //void shape(list[Vertex] vs, value vals...) = makeFig(Figure::shape(vs), vals);
@@ -143,7 +152,7 @@ void figure(num w, num h, void(Fig) block) {
   // NB: block should draw 1 node
   void _html(int w, int h, void() block) = add(Figure::html(w, h, render(block))); 
   
-  block(<_box, _ellipse, _circle, _ngon, _polygon, _hcat, _vcat, _overlay, _grid, _html>);
+  block(<_box, _ellipse, _circle, _ngon, _polygon, _rotate, _at, _hcat, _vcat, _overlay, _grid, _html>);
   
   iprintln(stack[-1].figs[0]);
   salix::lib::LayoutFigure::fig(stack[-1].figs[0], width=w, height=h);

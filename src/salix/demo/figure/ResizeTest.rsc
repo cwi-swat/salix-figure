@@ -78,7 +78,7 @@ Figure storm(Model m) {
         h2("Figure using SVG");
         // fig(storm(m));
         salix::lib::RenderFigure::figure(m.width, m.height, (Fig f) {
-              boxExamples(f);
+              boxExamples(f, m);
       });
         slider([[
                   [<resizeX, 0, "width:", 0, 1600, 50, m.width, "0", "1600"> ]
@@ -101,10 +101,11 @@ public void main() {
      c.serve();
      }
      
- void boxExamples(Fig f) {
-  f.vcat(vgap(10), () {
-    f.box(size(<150,50>), fillColor("lightGray"));
-    f.box(size(<150,50>), fillColor("lightGray"), () {
+ void boxExamples(Fig f, Model m) {
+  f.vcat(vgap(10), salix::lib::RenderFigure::style([<"border-width", "4">,<"border-style", "groove">
+     ]), () {
+    f.box(size(<m.width,50>), fillColor("lightGray"));
+    f.box(size(<m.width,50>), fillColor("red"), () {
       f.box(shrink(0.8), fillColor("green"));
     });
     

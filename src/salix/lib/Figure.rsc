@@ -48,38 +48,6 @@ data Event = noEvent()
              |onclick(Msg m);
 
 
-/* 
-   In bars the first column (rank) determines the bar placement order.	
-   The third column is the category label. 
-   In lines the third column determines the tooltips belonging to the points
-*/
-		 		 
-
-//data Margin = margin(int left = 0, int right = 0, int top = 0, int bottom = 0);
-
-/*
-	link
-	gradient(numr)
-	texture(loc image)
-	lineCap flat, rounded, padded
-	lineJoin	smooth, sharp(r), clipped
-	dashOffset
-		
-	linestyle: color, width, cap, join, dashing, dashOffset
-*/
-
-// Vertices for defining shapes.
-
-data Vertex
-	= line(num x, num y)
-	| lineBy(num x, num y)
-	| move(num x, num y)
-	| moveBy(num x, num y)
-	| arc(num rx, num ry, num rotation, bool largeArc, bool sweep, num x, num y)
-	;
-	
-alias Vertices = list[Vertex];
-
 alias Points = lrel[num x, num y];
 
 public alias Figures = list[Figure];
@@ -118,7 +86,6 @@ public data Figure(
 		str fillColor    = "none", 			
 		num fillOpacity = -1,	
 		str fillRule     = "evenodd",
-		list[str] clipPath = [],
 		
 		tuple[num, num] rounded = <0, 0>,
 
@@ -188,7 +155,7 @@ public data Figure(
    			bool fillEvenOdd = true,		
    			bool display = false
    			)
-   | image(str src="")
+ //  | image(str src="")
 
 // Figure composers
 // borderStyle =  none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset|initial|inherit;              
@@ -199,20 +166,25 @@ public data Figure(
 
 // Figure transformations
 
-   | at(num x, num y, Figure fig)	
+   | at(num x, num y, Figure fig)
+   
+   | at(num x, num y, Figure fig=emptyFigure())
+   
+   | rotate(num angle, Figure fig=emptyFigure(), num cx = -1, num cy = -1, num r=-1) // in Radians
    
    | rotate(num angle, Figure fig, num cx = -1, num cy = -1, num r=-1) // in Radians
 
 
    | graph(list[tuple[str, Figure]] nodes = [], list[Edge] edges = [], map[str, NodeProperty] nodeProperty = (), 
      GraphOptions graphOptions = graphOptions(), map[str, str] figId=())
+ /*
    | tree(Figure root, list[Figure] figs
 	       ,int xSep = 1, int ySep = 2, str pathColor = "black"
 	       ,Orientation orientation = topDown()
 	       ,bool manhattan=false
 // For memory management
 	       , int refinement=5, int rasterHeight=150)     
-/*
+
    |pack(Figures fs)
 */
    ;

@@ -144,7 +144,7 @@ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::ellipse()) {
         else
         if (startsWith(ref, "endMarker")) r+=salix::SVG::style("marker-end:url(#<ref>);");             
         }
-   r+=salix::SVG::vectorEffect("non-scaling-stroke");
+   // r+=salix::SVG::vectorEffect("non-scaling-stroke");
    r+=salix::SVG::d(intercalate(" ", curve));
    r+=fromCommonFigureAttributesToSalix(f);
    return r; 
@@ -163,7 +163,7 @@ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::polygon(Points cur
         else
         if (startsWith(ref, "endMarker")) r+=salix::SVG::style("marker-end:url(#<ref>);");             
         }
-   r+=salix::SVG::vectorEffect("non-scaling-stroke");
+   // r+=salix::SVG::vectorEffect("non-scaling-stroke");
    r+=salix::SVG::points(points2str(curve));
    r+=fromCommonFigureAttributesToSalix(f);
    return r; 
@@ -180,7 +180,7 @@ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::polyline(Points cu
         else
         if (startsWith(ref, "endMarker")) r+=salix::SVG::style("marker-end:url(#<ref>);");             
         }
-   r+=salix::SVG::vectorEffect("non-scaling-stroke");
+   // r+=salix::SVG::vectorEffect("non-scaling-stroke");
    r+=salix::SVG::points(points2str(curve));
    r+=fromCommonFigureAttributesToSalix(f);
    return r; 
@@ -194,7 +194,7 @@ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::ngon(),
    if (lwo<0) lwo = 0;
    if (f.width>=0) r+= salix::SVG::width("<toP(f.width)>"); 
    if (f.height>=0) r+= salix::SVG::height("<toP(f.height)>");
-   r+=salix::SVG::vectorEffect("non-scaling-stroke");
+   // r+=salix::SVG::vectorEffect("non-scaling-stroke");
    r+=salix::SVG::d(intercalate(" ", curve));
    r+= salix::SVG::x("<toP(lwo/2)>"); r+= salix::SVG::y("<toP(lwo/2)>");
    r+=fromCommonFigureAttributesToSalix(f);
@@ -396,6 +396,11 @@ Figure pullDim(Figure f:svgText(_)) {
     return adjustParameters(f);
     }
     
+Figure pullDim(Figure f:at(num x, num y)) {
+    Figure g = f.fig;
+    return pullDim(at(x, y, g));
+    }
+    
 Figure pullDim(Figure f:at(num x, num y, Figure g)) {
     f = adjustParameters(f);
     g = pullDim(g);
@@ -407,6 +412,11 @@ Figure pullDim(Figure f:at(num x, num y, Figure g)) {
     r.hgrow = f.hgrow; r.vgrow = f.vgrow;
     r.hshrink = f.hshrink; r.vshrink = f.vshrink;
     return r;
+    }
+    
+Figure pullDim(Figure f:rotate(num angle)) {
+    Figure g = f.fig;
+    return pullDim(rotate(angle,  g));
     }
     
 Figure pullDim(Figure f:rotate(num angle, Figure g)) {
@@ -605,6 +615,11 @@ list[list[Figure]] expand(list[list[Figure]] m) {
       return f;
       }
       
+Figure pushDim(Figure f:rotate(num angle)) {
+      Figure g = f.fig;
+      return pushDim(rotate(angle, g));
+      }
+      
  Figure pushDim(Figure f:rotate(num angle, Figure g)) {
     num lwo = getLineWidth(f);
     num lwi = getLineWidth(g);
@@ -620,6 +635,11 @@ list[list[Figure]] expand(list[list[Figure]] m) {
     r.width = f.width;
     r.height = f.height;
     return r;
+    }
+    
+ Figure pushDim(Figure f:at(num x, num y)) {
+    Figure g = f.fig;
+    return pushDim(at(x, y, g));
     }
     
  Figure pushDim(Figure f:at(num x, num y, Figure g)) {
@@ -735,7 +755,7 @@ void eval(Figure f:htmlText(str s)) {
      list[value] tdArgs =[salix::HTML::style(styles)];
      tdArgs += hAlign(f.align);
      tdArgs += vAlign(f.align); 
-     tdArgs+=[salix::HTML::style(styles)];
+     // tdArgs+=[salix::HTML::style(styles)];
      list[value] tableArgs = /*foreignObjectArgs+*/fromTextPropertiesToSalix(f, false); 
      foreignObject(foreignObjectArgs+[(){table(tableArgs+[(){tr((){td(tdArgs+[(){htm((){_text(s);});}]);});}]);}]);
     }
@@ -881,6 +901,21 @@ void eval(Figure f:salix::lib::Figure::rotate(num angle, Figure g)) {
        }
 
 void eval(Figure f:at(num x, num y, Figure g)) {
+           salix::SVG::g(fromFigureAttributesToSalix(f)+[(){
+                   if (emptyFigure()!:=g) eval(g);
+           }]);
+         }
+         
+void eval(Figure f:salix::lib::Figure::rotate(num angle)) {
+        Figure g = f.fig;
+        salix::SVG::g(fromFigureAttributesToSalix(f)+[(){
+            salix::SVG::circle(fromFigureAttributesToSalix(f));
+           if (emptyFigure()!:=g) innerFig(f, g)();
+           }]);
+       }
+
+void eval(Figure f:at(num x, num y)) {
+           Figure g = f.fig;
            salix::SVG::g(fromFigureAttributesToSalix(f)+[(){
                    if (emptyFigure()!:=g) eval(g);
            }]);
