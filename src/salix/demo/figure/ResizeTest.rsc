@@ -102,19 +102,19 @@ public void main() {
      }
      
  void boxExamples(Fig f, Model m) {
-  f.vcat(vgap(10), salix::lib::RenderFigure::style([<"border-width", "4">,<"border-style", "groove">
-     ]), () {
-    f.box(size(<m.width,50>), fillColor("lightGray"));
-    f.box(size(<m.width,50>), fillColor("red"), () {
-      f.box(shrink(0.8), fillColor("green"));
-    });
+  f.vcat(vgap(10), borderWidth(4), borderStyle("groove")
+     , () {
+    f.box(salix::lib::RenderFigure::height(50), fillColor("lightGray"));
+    f.box(salix::lib::RenderFigure::height(50), fillColor("red"), () {
+         f.box(shrink(0.8), fillColor("green"));
+         });
     
-    f.box(size(<150, 50>), fillColor("lightGray"), () {
+    f.box(salix::lib::RenderFigure::size(<150, 50>), fillColor("lightGray"), () {
       f.box(shrink(0.8), align(<0, 0>), fillColor("green"));
     });
     
     f.box(grow(1.2), fillColor("blue"), () {
-      f.box(size(<150, 50>), fillColor("lightGray"));
+      f.box(salix::lib::RenderFigure::size(<150, 50>), fillColor("lightGray"));
     });
     
     f.box(lineColor("black"), () {

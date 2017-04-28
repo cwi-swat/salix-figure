@@ -13,7 +13,6 @@ data FProp
   | rx(num x)
   | ry(num y)
   | r(num r)
-  | text(str txt)
   | points(Points points)
   | yReverse(bool b)
   | xReverse(bool b)
@@ -21,31 +20,33 @@ data FProp
   | closed(bool b)
   | curved(bool b)
   | padding(tuple[int left, int top, int right, int bottom] padding)
-  | width(int w)
-  | height(int h)
+  | width(num w)
+  | height(num h)
   | align(Alignment align)
   | cellAlign(Alignment align)
-  | bigger(num x)
-  | shrink(num s)
+  | shrink(num shrink)
   | hshrink(num hshrink)
   | vshrink(num vshrink)
   | grow(num grow)
   | hgrow(num hgrow)
   | vgrow(num vgrow)
   | resizable(bool b)
-  | gap(tuple[int hgap, int vgap] hvgap) // todo: fix superfluous tuples here.
-  | hgap(int hgap)
-  | vgap(int vgap)
-  | lineWidth(int w)
+  | gap(tuple[num hgap, num vgap] hvgap) // todo: fix superfluous tuples here.
+  | hgap(num hgap)
+  | vgap(num vgap)
+  | lineWidth(num w)
   | lineColor(str color)
   | lineDashing(list[int] ds)
   | lineOpacity(num opacity)
+  | borderWidth(num w)
+  | borderStyle(str style)
+  | borderColor(str color)
   | fillColor(str color)
   | fillOpacity(num opacity)
   | fillRule(str rule)
   | clipPath(list[str] path)
-  | rounded(tuple[int r1, int r2] rounded)
-  | size(tuple[int r1, int r2] size)
+  | rounded(tuple[num r1, num r2] rounded)
+  | size(tuple[num r1, num r2] size)
   | viewBox(tuple[num x, num y, num width, num height] viewBox)
   | style(lrel[str key, str val] ccs)
   ; 
@@ -53,6 +54,7 @@ data FProp
 alias FigF = void(list[value]);
 alias HtmlF = void(int, int, void()); 
 alias FigF1 = void(num, list[value]);
+alias FigFstr = void(str, list[value]);
 alias FigF2 = void(num, num, list[value]);
 alias FigFpoints = void(Points, list[value]);
 
@@ -64,6 +66,10 @@ alias Fig = tuple[
   FigF circle,
   FigF ngon,
   FigFpoints polygon,
+  
+  // Text
+  FigFstr htmlText,
+  FigFstr svgText,
   
   // Transform
   FigF1 rotate,
@@ -132,6 +138,8 @@ void figure(num w, num h, void(Fig) block) {
   void _circle(value vals...) = makeFig(Figure::circle(), vals);
   void _ngon(value vals...) = makeFig(Figure::ngon(), vals);
   void _polygon(Points points, value vals...) = makeFig(Figure::polygon(points), vals);
+  void _htmlText(str  txt, value vals...) = makeFig(Figure::htmlText(txt), vals);
+  void _svgText(str  txt, value vals...) = makeFig(Figure::svgText(txt), vals);
   void _rotate(num angle, value vals...) = makeFig(Figure::rotate(angle), vals);
   void _at(num x, num y, value vals...) = makeFig(Figure::at(x, y), vals);
   
@@ -152,7 +160,7 @@ void figure(num w, num h, void(Fig) block) {
   // NB: block should draw 1 node
   void _html(int w, int h, void() block) = add(Figure::html(w, h, render(block))); 
   
-  block(<_box, _ellipse, _circle, _ngon, _polygon, _rotate, _at, _hcat, _vcat, _overlay, _grid, _html>);
+  block(<_box, _ellipse, _circle, _ngon, _polygon, _htmlText, _svgText, _rotate, _at, _hcat, _vcat, _overlay, _grid, _html>);
   
   iprintln(stack[-1].figs[0]);
   salix::lib::LayoutFigure::fig(stack[-1].figs[0], width=w, height=h);
