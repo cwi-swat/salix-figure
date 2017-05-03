@@ -33,15 +33,11 @@ data Msg
 
 Model init() = startModel;
 
-
-     
 void myView(Model m) {
     div(() {
         h2("Figure using SVG");
         // fig(testFigure(m), width = m[0].width, height = m[0].height);
-         salix::lib::RenderFigure::figure(m[0].width, m[0].height, (Fig f) {
-              testFigure(f, m);
-      });
+        fig(m[0].width, m[0].height, (Fig f) {testFigure(f, m);});
         num lo = 200, hi = 1000;
         list[list[list[SliderBar]]] sliderBars = [[
                              [
@@ -58,7 +54,7 @@ void myView(Model m) {
         });
     }
     
-//---------------------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------
 
 App[Model] testApp() {
    return app(init, myView, update, 
@@ -80,5 +76,8 @@ Figure testFigure(Model m) {
      
  void testFigure(Fig f, Model m) { 
      Points points = [<0, 0>,  <1+sin(m[0].phi), cos(m[0].phi)>, <sin(m[0].phi), cos(m[0].phi)>, <1,0>];
-     f.rotate(PI()/6, (){f.polygon(points, lineColor("black"), fillColor("yellow"), lineWidth(1), viewBox(<0, 0, 2, 2>));});
+     f.rotate(PI()/6, (){
+         f.polygon(points, lineColor("black"), fillColor("yellow"), lineWidth(1)
+        ,viewBox(<0, 0, 2, 2>));
+         });
      } 

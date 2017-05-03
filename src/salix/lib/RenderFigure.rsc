@@ -13,6 +13,9 @@ data FProp
   | rx(num x)
   | ry(num y)
   | r(num r)
+  | n(int n)
+  | d(str d)
+  | angle(num phi)
   | points(Points points)
   | yReverse(bool b)
   | xReverse(bool b)
@@ -49,15 +52,15 @@ data FProp
   | size(tuple[num r1, num r2] size)
   | viewBox(tuple[num x, num y, num width, num height] viewBox)
   | style(lrel[str key, str val] ccs)
+  | fontColor(str color)
+  | fontStyle(str style)
+  | fontWidth(num w)
+  | marker(str marker)
   ; 
   
-alias FigF = void(list[value]);
-alias HtmlF = void(int, int, void()); 
+alias FigF = void(list[value]); 
 alias FigF1 = void(num, list[value]);
-alias FigFstr = void(str, list[value]);
 alias FigF2 = void(num, num, list[value]);
-alias FigFpoints = void(Points, list[value]);
-
 alias Fig = tuple[
 
   // Primitives
@@ -65,18 +68,18 @@ alias Fig = tuple[
   FigF ellipse,
   FigF circle,
   FigF ngon,
-  FigFpoints polygon,
+  FigF polygon,
   
   // Text
-  FigFstr htmlText,
-  FigFstr svgText,
+  FigF htmlText,
+  FigF svgText,
   
   // Transform
   FigF1 rotate,
   FigF2 at, 
   
   //FigF shape, // needs nesting with start/mid/end marker
-  //FigF path, // needs nesting with start/mid/end marker
+  FigF path, // needs nesting with start/mid/end marker
   
   FigF hcat,
   FigF vcat,
@@ -84,13 +87,12 @@ alias Fig = tuple[
   FigF grid,
   
   // embedding salix
-  HtmlF html
+  FigF html
 ];
 
 data Figure
  = dummy(list[Figure] figs = [])
  // TODO: extend eval to interpret this figure
- | html(int width, int height, Node n)
  ;
 
 Figure setProps(Figure f, list[value] vals) {
@@ -99,7 +101,7 @@ Figure setProps(Figure f, list[value] vals) {
   return ( f | setKeywordParameters(it, update(getKeywordParameters(it), fp)) | FProp fp <- vals );
 }
 
-void figure(num w, num h, void(Fig) block) {
+void fig(num w, num h, void(Fig) block) {
   list[Figure] stack = [dummy()];
   
   Figure pop() {
@@ -114,8 +116,19 @@ void figure(num w, num h, void(Fig) block) {
   
   void add(Figure f) {
     Figure t = pop();
-    
+    if (t has startMarker && f.marker=="start") {
+        t.startMarker = f;
+        }
+    else
+    if (t has midMarker && f.marker=="mid") {
+        t.midMarker = f;
+        }
+    else
+    if (t has endMarker && f.marker=="end") {
+        t.endMarker = f;
+        }
     // todo: should all be figs
+    else
     if (t has figs) {
       t.figs += [f];
     }
@@ -137,9 +150,21 @@ void figure(num w, num h, void(Fig) block) {
   void _ellipse(value vals...) = makeFig(Figure::ellipse(), vals);
   void _circle(value vals...) = makeFig(Figure::circle(), vals);
   void _ngon(value vals...) = makeFig(Figure::ngon(), vals);
-  void _polygon(Points points, value vals...) = makeFig(Figure::polygon(points), vals);
-  void _htmlText(str  txt, value vals...) = makeFig(Figure::htmlText(txt), vals);
-  void _svgText(str  txt, value vals...) = makeFig(Figure::svgText(txt), vals);
+  void _polygon(value vals...) {
+         if (vals != [], Points points := vals[-1]) {
+           makeFig(Figure::polygon(points), vals);
+           }
+         }
+  void _htmlText(value vals...) {
+         if (vals != [], str txt := vals[-1]) {
+             makeFig(Figure::htmlText(txt), vals[0..-1]);
+             }
+          }
+  void _svgText(value vals...) {
+          if (vals != [], str txt := vals[-1]) {
+            makeFig(Figure::svgText(txt), vals);
+            }
+          }
   void _rotate(num angle, value vals...) = makeFig(Figure::rotate(angle), vals);
   void _at(num x, num y, value vals...) = makeFig(Figure::at(x, y), vals);
   
@@ -151,16 +176,20 @@ void figure(num w, num h, void(Fig) block) {
   // void textpath...
   
   // and start/end/mid marker should be just figs
-  
+  void _path(value vals...) = makeFig(Figure::path(), vals);
   void _hcat(value vals...) = makeFig(Figure::hcat(), vals);
   void _vcat(value vals...) = makeFig(Figure::vcat(), vals);
   void _overlay(value vals...) = makeFig(Figure::overlay(), vals);
   void _grid(value vals...) = makeFig(Figure::grid(), vals);
   
   // NB: block should draw 1 node
-  void _html(int w, int h, void() block) = add(Figure::html(w, h, render(block))); 
+  void _html(value vals...) {
+      if (vals != [], void() block := vals[-1]) {
+         makeFig(Figure::htmlFigure(block), vals[0..-1]);
+         }      
+      }
   
-  block(<_box, _ellipse, _circle, _ngon, _polygon, _htmlText, _svgText, _rotate, _at, _hcat, _vcat, _overlay, _grid, _html>);
+  block(<_box, _ellipse, _circle, _ngon, _polygon, _htmlText, _svgText, _rotate, _at, _path, _hcat, _vcat, _overlay, _grid, _html>);
   
   iprintln(stack[-1].figs[0]);
   salix::lib::LayoutFigure::fig(stack[-1].figs[0], width=w, height=h);

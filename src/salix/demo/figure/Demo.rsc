@@ -30,8 +30,40 @@ Model init() = startModel;
     
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-     
+void() newBox(Fig f, Model m, str lc, void() inner) = () {
+      f.at(10, 10
+      ,(){
+         f.box(fillColor("none"), lineWidth(8), lineColor(lc), FProp::shrink(m[0].shrink)
+         ,FProp::grow(m[0].grow), inner);
+         }
+      );
+     };
+            
+void boxes(Fig f, Model m) {
+      list[str] colors = ["green",  "red", "blue", "grey", "magenta", "brown"];
+      f.hcat(fillColor("none"), borderWidth(0) 
+      ,() {
+          ((){f.at(10, 10 
+             ,(){
+                f.box(FProp::grow(m[0].grow), lineColor("grey"), fillColor("yellow")
+                     ,lineWidth(8),size(<30, 40>));
+                }
+              );}|newBox(f, m, e, it)|e<-colors)();
+              f.box(size(<300, 300>)
+              ,(){
+                 (() {
+                     f.at(10, 10
+                     ,(){
+                         f.box(FProp::shrink(m[0].shrink), lineColor("grey"), lineWidth(1)
+                         ,fillColor("antiquewhite"));
+                         }
+                  );}|newBox(f, m, e, it)| e<-colors)();        
+                  }
+              );
+             }
+          );         
+      }
+/*    
 public Figure newBox(Model m, str lc, Figure el) {
       return at(10, 10, box(align = centerMid, lineColor= lc, 
              fillColor = "none", fig = el, lineWidth = 8  
@@ -55,6 +87,7 @@ public Figure boxes(Model m) {
             ])
          ;
           }
+*/
 
 public Figure newEllipse(Model m, str lc, Figure el) {
       return 
@@ -126,9 +159,9 @@ public list[list[Figure]] figures(Model m, bool tooltip) =
 [
    [boxes(m)],
      [ellipses(m)]
-   , [ngons(m)]
-    , [vennDiagram()]
-     ]; 
+    ,[ngons(m)]
+    ,[vennDiagram()]
+   ]; 
      
       
             
@@ -142,8 +175,11 @@ public list[list[Figure]] figures(Model m, bool tooltip) =
     div(() {
         h2("Figure using SVG");
         // fig(testFigure(m));
-        salix::lib::RenderFigure::figure(500, 500, (Fig f) {
+        salix::lib::RenderFigure::figure(800, 400, (Fig f) {
               vennDiagram(f, m);
+         });
+        salix::lib::RenderFigure::figure(800, 400, (Fig f) {
+              boxes(f, m);
          });
          slider([[
                   [<Msg::shrink, 0, "shrink box:", 0.9, 1, 0.01, 1,"", ""> ]

@@ -81,6 +81,10 @@ public data Figure(
 		num lineWidth = -1,			
 		str lineColor = "", 		
 		num lineOpacity = -1,
+		
+		// Path properties
+		str marker = "", 
+		str d = "", 
 	
 		// Area properties
 		str fillColor    = "none", 			
@@ -145,6 +149,12 @@ public data Figure(
    	    ,Figure endMarker=emptyFigure()   
         )		
    | path(list[str] curve, 	str transform=""	
+   			    ,bool fillEvenOdd = true		
+   			    ,Figure startMarker=emptyFigure()
+   			    ,Figure midMarker=emptyFigure() 
+   			    ,Figure endMarker=emptyFigure()   
+   		   )
+    | path(str transform=""	
    			    ,bool fillEvenOdd = true		
    			    ,Figure startMarker=emptyFigure()
    			    ,Figure midMarker=emptyFigure() 
