@@ -31,6 +31,20 @@ data Msg
 
 Model init() = startModel;
 
+void tableTest(Fig f, Model m) = f.grid(borderWidth(4), borderStyle("groove"), 
+      () {
+            f.row(
+               (){
+                  list[str] colors = ["red","yellow", "blue"];
+                  for (str c<-colors) f.box(size(<40, 40>), fillColor(c));
+                  });
+            f.row(
+               (){
+                  list[str] colors = ["green","brown", "yellow"];
+                  for (str c<-colors) f.box(size(<40, 40>), fillColor(c));
+                  });
+         });
+
 void testFigure(Fig f, Model m) = 
       f.ngon(n(6), fillColor("green"), grow(1.2), fillOpacity(0.2), lineWidth(4), lineColor("red"),
          () {f.html(size(<100, 100>),
@@ -96,7 +110,8 @@ void myView(Model m) {
     div(() {
         h2("Figure using SVG");
         fig(800, 400, (Fig f) {
-              testFigure(f, m);
+              // testFigure(f, m);
+              tableTest(f, m);
          });
        });
      }

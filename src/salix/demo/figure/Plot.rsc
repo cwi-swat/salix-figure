@@ -41,8 +41,8 @@ void testFigure(Fig f, Model m) =
                              path1+=intercalate(" ", [p_.L(m[0].f*2*PI()*i/n, -sin(2*PI()*(i/n)+m[0].x))|num i<-[1, 2..n+1]]);
                              f.path(d(path1), viewBox(<0, -1, 2*PI(), 2>), fillColor("none"), lineColor("red")
                              , () {
-                                f.circle(r(2), marker("mid"), fillColor("brown") , viewBox(<0, 0, 400, 400>)
-                                );
+                                f.circle(r(3), fillColor("grey"), viewBox(<0, 0, 600, 600>), marker("mid")
+                                   );
                                 }
                              );
                              str path2 = p_.M(0, -cos(m[1].x));

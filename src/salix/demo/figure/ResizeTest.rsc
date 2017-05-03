@@ -77,12 +77,12 @@ Figure storm(Model m) {
     div(() {
         h2("Figure using SVG");
         // fig(storm(m));
-        salix::lib::RenderFigure::figure(m.width, m.height, (Fig f) {
+        fig(800, 800, (Fig f) {
               boxExamples(f, m);
       });
         slider([[
-                  [<resizeX, 0, "width:", 0, 1600, 50, m.width, "0", "1600"> ]
-                 ,[<resizeY, 0, "height:", 0, 1600, 50, m.height,"0", "1600"> ]
+                  [<resizeX, 0, "width:", 0, 700, 50, m.width, "0", "700"> ]
+                 ,[<resizeY, 0, "height:", 0, 700, 50, m.height,"0", "700"> ]
                  ]]);   
          });  
     }
@@ -102,19 +102,18 @@ public void main() {
      }
      
  void boxExamples(Fig f, Model m) {
-  f.vcat(vgap(10), borderWidth(4), borderStyle("groove")
+  f.vcat(FProp::height(m.height), vgap(0), borderWidth(4), borderStyle("groove")
      , () {
-    f.box(salix::lib::RenderFigure::height(50), fillColor("lightGray"));
-    f.box(salix::lib::RenderFigure::height(50), fillColor("red"), () {
+    f.box(FProp::height(50), fillColor("lightGray"));
+    f.box(FProp::height(50), fillColor("red"), () {
          f.box(shrink(0.8), fillColor("green"));
          });
     
-    f.box(salix::lib::RenderFigure::size(<150, 50>), fillColor("lightGray"), () {
+    f.box(FProp::size(<m.width, 50>), fillColor("lightGray"), () {
       f.box(shrink(0.8), align(<0, 0>), fillColor("green"));
     });
     
     f.box(grow(1.2), fillColor("blue"), () {
-      f.box(salix::lib::RenderFigure::size(<150, 50>), fillColor("lightGray"));
     });
     
     f.box(lineColor("black"), () {

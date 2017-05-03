@@ -327,7 +327,10 @@ void() tableCells(Figure f, list[Figure] g) {
 void() tableRows(Figure f) {
     list[void()] r =[];
     list[list[Figure]] figArray = [];
-    if (grid():=f) figArray = f.figArray;
+    if (grid():=f) {
+       if (!isEmpty(f.figArray)) figArray = f.figArray;
+       else figArray=[g.figs|Figure g<-f.figs]; // g is row
+       }  
     else if (vcat():=f) figArray  = [[h]|h<-f.figs];    
     else if (hcat():=f) figArray  = [f.figs];
     for (list[Figure] g<-figArray) {
@@ -487,7 +490,10 @@ default Figure pullDim(Figure f) {
          num lw = getLineWidth(f);
          int nc  = 0;
          list[list[Figure]] figArray = [];
-         if (grid():=f) figArray = f.figArray;
+         if (grid():=f) {
+             if (!isEmpty(f.figArray)) figArray = f.figArray;
+             else figArray=[g.figs|Figure g<-f.figs]; // g is row
+             }
          else if (vcat():=f) figArray= [[h]|h<-f.figs]; 
          else if (hcat():=f) figArray  = [f.figs];
          list[num] maxColWidth = [-1|_<-[0..max([size(g)|g<-figArray])]];
@@ -694,7 +700,10 @@ Figure pushDim(Figure f:rotate(num angle)) {
      if (grid():=f || vcat():=f || hcat():=f) {
          num lw = getLineWidth(f);
          list[list[Figure]] figArray = [];
-         if (grid():=f) figArray = f.figArray;
+         if (grid():=f) {
+             if (!isEmpty(f.figArray)) figArray = f.figArray;
+             else figArray=[g.figs|Figure g<-f.figs]; // g is row
+             }
          else if (vcat():=f) figArray= [[h]|h<-f.figs]; 
          else if (hcat():=f) figArray  = [f.figs];
          tuple[num height, list[list[Figure]] figs] cellsH = getHeightMissingCells(f.height, lw, f.vgap, figArray);
@@ -736,6 +745,7 @@ Figure pushDim(Figure f:rotate(num angle)) {
        }
      root.fig = f;
      root = solveDim(root);
+     println("Root <root>");
      eval(root);
      }
     

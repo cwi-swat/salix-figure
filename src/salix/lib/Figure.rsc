@@ -168,11 +168,12 @@ public data Figure(
  //  | image(str src="")
 
 // Figure composers
-// borderStyle =  none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset|initial|inherit;              
+// borderStyle =  none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset|initial|inherit;
+   | row(Figures figs=[])                   // For inside grid
    | hcat(Figures figs=[]) 					// horizontal and vertical concatenation
    | vcat(Figures figs=[]) 					// horizontal and vertical concatenation 
    | overlay(Figures figs=[])				
-   | grid(list[Figures] figArray = [[]]) 	// grid of figures
+   | grid(list[Figures] figArray = [], Figures figs=[]) 	// grid of figures
 
 // Figure transformations
 
@@ -212,15 +213,6 @@ data Edge = edge(str from, str to, str label = "", str lineInterpolate="basis" /
      , list[int] lineDashing = []
      , int labelOffset = 10, int lineWidth = -1);
   
-
-
-public Figure idEllipse(num rx, num ry) = ellipse(rx=rx, ry = ry, lineWidth = 0, fillColor = "none");
-
-public Figure idCircle(num r) = circle(r= r, lineWidth = 0, fillColor = "none");
-
-public Figure idNgon(int n, num r) = ngon(n=  n, r= r, lineWidth = 0, fillColor = "none");
-
-public Figure idRect(int width, int height) = box(width = width, height = height, lineWidth = 0, fillColor = "none");
 
 /* options must be renamed to graphOptions */
 public Figure graph(list[tuple[str, Figure]] n, list[Edge] e, tuple[int, int] size=<0,0>, int width = -1, int height = -1,

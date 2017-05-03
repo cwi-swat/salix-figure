@@ -84,6 +84,7 @@ alias Fig = tuple[
   FigF hcat,
   FigF vcat,
   FigF overlay,
+  FigF row,
   FigF grid,
   
   // embedding salix
@@ -180,6 +181,7 @@ void fig(num w, num h, void(Fig) block) {
   void _hcat(value vals...) = makeFig(Figure::hcat(), vals);
   void _vcat(value vals...) = makeFig(Figure::vcat(), vals);
   void _overlay(value vals...) = makeFig(Figure::overlay(), vals);
+  void _row(value vals...) = makeFig(Figure::row(), vals);
   void _grid(value vals...) = makeFig(Figure::grid(), vals);
   
   // NB: block should draw 1 node
@@ -189,7 +191,7 @@ void fig(num w, num h, void(Fig) block) {
          }      
       }
   
-  block(<_box, _ellipse, _circle, _ngon, _polygon, _htmlText, _svgText, _rotate, _at, _path, _hcat, _vcat, _overlay, _grid, _html>);
+  block(<_box, _ellipse, _circle, _ngon, _polygon, _htmlText, _svgText, _rotate, _at, _path, _hcat, _vcat, _overlay, _row, _grid, _html>);
   
   iprintln(stack[-1].figs[0]);
   salix::lib::LayoutFigure::fig(stack[-1].figs[0], width=w, height=h);
