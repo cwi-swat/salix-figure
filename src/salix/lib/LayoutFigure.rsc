@@ -54,9 +54,13 @@ str toP(num e) {
            (isGrid(f)?f.borderWidth:f.lineWidth);
       return (lw>=0?lw:0);
       }
+      
+list[value] fromCommonFigureAttributesToSalix(Figure f) { 
+      return fromCommonFigureAttributesToSalix(f, []);
+      }
        
- list[value] fromCommonFigureAttributesToSalix(Figure f) {  
-   list[tuple[str, str]] styles = f.style; 
+ list[value] fromCommonFigureAttributesToSalix(Figure f, list[tuple[str, str]] styles) {  
+   styles += f.style; 
    list[value] r =[];    
    if (!isEmpty(f.fillColor)) r+= salix::SVG::fill(f.fillColor);
    if (!isEmpty(f.lineColor)) r+= salix::SVG::stroke(f.lineColor);
@@ -136,16 +140,18 @@ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::ellipse()) {
    list[value] r =[];
    if (f.width>=0) r+= salix::SVG::width("<f.width>"); 
    if (f.height>=0) r+= salix::SVG::height("<f.height>");
+   lrel[str, str] q =[];
    for (str ref <-refs) {
-        if (startsWith(ref, "startMarker")) r+=salix::SVG::style("marker-start:url(#<ref>);");
+        if (startsWith(ref, "startMarker"))  q+=<"marker-start", "url(#<ref>)">;
         else
-        if (startsWith(ref, "midMarker")) r+=salix::SVG::style("marker-mid:url(#<ref>);");
+        if (startsWith(ref, "midMarker")) q+=<"marker-mid", "url(#<ref>)">;
         else
-        if (startsWith(ref, "endMarker")) r+=salix::SVG::style("marker-end:url(#<ref>);");             
+        if (startsWith(ref, "endMarker")) q+= <"marker-end", "url(#<ref>)">;            
         }
+   r+=salix::HTML::style(q);
    // r+=salix::SVG::vectorEffect("non-scaling-stroke");
    r+=salix::SVG::d(f.d);
-   r+=fromCommonFigureAttributesToSalix(f);
+   r+=fromCommonFigureAttributesToSalix(f, q);
    return r; 
    }
    
@@ -165,34 +171,37 @@ str points2str(Points points) = "<for(p<-points){> <toP(p[0])>,<toP(p[1])>  <}>"
 list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::polygon(Points curve), list[str] refs) {
    list[value] r =[];
    if (f.width>=0) r+= salix::SVG::width("<f.width>"); 
-   if (f.height>=0) r+= salix::SVG::height("<f.height>");
+   if (f.height>=0) r+= salix::SVG::height("<f.height>");  
+   lrel[str, str] q =[];
    for (str ref <-refs) {
-        if (startsWith(ref, "startMarker")) r+=salix::SVG::style("marker-start:url(#<ref>);");
+        if (startsWith(ref, "startMarker"))  q+=<"marker-start", "url(#<ref>)">;
         else
-        if (startsWith(ref, "midMarker")) r+=salix::SVG::style("marker-mid:url(#<ref>);");
+        if (startsWith(ref, "midMarker")) q+=<"marker-mid", "url(#<ref>)">;
         else
-        if (startsWith(ref, "endMarker")) r+=salix::SVG::style("marker-end:url(#<ref>);");             
+        if (startsWith(ref, "endMarker")) q+= <"marker-end", "url(#<ref>)">;            
         }
+   r+=salix::HTML::style(q);
    // r+=salix::SVG::vectorEffect("non-scaling-stroke");
    r+=salix::SVG::points(points2str(curve));
-   r+=fromCommonFigureAttributesToSalix(f);
+   r+=fromCommonFigureAttributesToSalix(f, q);
    return r; 
    } 
    
 list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::polyline(Points curve), list[str] refs) {
-   list[value] r =[];
+    list[value] r = [];
    if (f.width>=0) r+= salix::SVG::width("<f.width>"); 
    if (f.height>=0) r+= salix::SVG::height("<f.height>");
+   lrel[str, str] q =[];
    for (str ref <-refs) {
-        if (startsWith(ref, "startMarker")) r+=salix::SVG::style("marker-start:url(#<ref>);");
+        if (startsWith(ref, "startMarker"))  q+=<"marker-start", "url(#<ref>)">;
         else
-        if (startsWith(ref, "midMarker")) r+=salix::SVG::style("marker-mid:url(#<ref>);");
+        if (startsWith(ref, "midMarker")) q+=<"marker-mid", "url(#<ref>)">;
         else
-        if (startsWith(ref, "endMarker")) r+=salix::SVG::style("marker-end:url(#<ref>);");             
+        if (startsWith(ref, "endMarker")) q+= <"marker-end", "url(#<ref>)">;            
         }
-   // r+=salix::SVG::vectorEffect("non-scaling-stroke");
+   r+=salix::HTML::style(q);
    r+=salix::SVG::points(points2str(curve));
-   r+=fromCommonFigureAttributesToSalix(f);
+   r+=fromCommonFigureAttributesToSalix(f, q);
    return r; 
    }   
 

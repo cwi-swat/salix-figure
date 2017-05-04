@@ -3,11 +3,8 @@ module salix::demo::figure::Nesting
 import util::Math;
 import salix::lib::Figure;
 import salix::HTML;
-import salix::Core;
 import salix::App;
-import salix::lib::LayoutFigure;
 import salix::lib::RenderFigure;
-import salix::Slider;
 
 alias Model = list[tuple[num width, num height]];
 
@@ -79,61 +76,19 @@ void testFigure(Fig f, Model m) =
                 });
            });});
          
-/*
-Figure testFigure(Model m) {
-     return ngon(n=6, fillColor="green", fillOpacity=0.2, grow=1.2, lineWidth=4, lineColor="red", fig = htmlFigure(
-         () {
-            table(
-                salix::HTML::style([
-                  <"border-style","groove">, <"width", "inherit">,<"height","inherit">]), () {
-                 tr(() {
-                    td("aap");
-                    td("noot");
-                    });         
-                 tr((){
-                     td("teun");
-                     td("gijs");
-                     }
-                   );
-                 tr((){
-                     td((){fig(box(size=<10, 10>, fillColor="blue"));});
-                     td((){fig(circle(r=5, fillColor="green"));});
-                     }
-                   );
-                 });
-            }, size=<100, 100>, fillColor="red", fillOpacity=0.2)
-         );
-     }
- */
      
 void myView(Model m) {
     div(() {
         h2("Figure using SVG");
-        fig(800, 400, (Fig f) {
-              // testFigure(f, m);
+        fig(800, 200, (Fig f) {
               tableTest(f, m);
+         });
+         fig(800, 200, (Fig f) {
+              testFigure(f, m);
          });
        });
      }
   
-/*   
-void myView(Model m) {
-    div(() {
-        h2("Figure using SVG");
-        fig(testFigure(m), width = m[0].width, height = m[0].height);
-        num lo = 200, hi = 1000;
-        list[list[list[SliderBar]]] sliderBars = [[
-                             [
-                              < resizeX, 0, "resize X:", lo, hi, 50, startWidth,"<lo>", "<hi>"> 
-                             ]
-                             ,[
-                              < resizeY, 0, "resize Y:", lo, hi, 50, startHeight,"<lo>", "<hi>"> 
-                             ]
-                             ]];
-        slider(sliderBars);
-        });
-    }
-  */
     
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
