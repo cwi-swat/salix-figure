@@ -77,7 +77,7 @@ Figure testFigure(Model m) {
  void testFigure(Fig f, Model m) { 
      Points points = [<0, 0>,  <1+sin(m[0].phi), cos(m[0].phi)>, <sin(m[0].phi), cos(m[0].phi)>, <1,0>];
      f.rotate(PI()/6, (){
-         f.polygon(points, lineColor("black"), fillColor("yellow"), lineWidth(1)
-        ,viewBox(<0, 0, 2, 2>));
+         f.polygon(lineColor("black"), fillColor("yellow"), lineWidth(1)
+        ,viewBox(<0, 0, 2, 2>), points);
          });
      } 
