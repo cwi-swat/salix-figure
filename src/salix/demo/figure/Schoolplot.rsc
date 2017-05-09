@@ -79,7 +79,7 @@ list[str] innerSchoolPlot2() {
      return [p_.M(i, 10), p_.L(0, i)|i<-[s,s+0.5..10]];
      }
    
- void schoolPlot(Fig f, Model g) {
+void schoolPlot(Fig f, Model g) {
      tuple[num side] m  =g[0];
      num d = m.side-40;
      num r = d;

@@ -54,8 +54,9 @@ data FProp
   | style(lrel[str key, str val] ccs)
   | fontColor(str color)
   | fontStyle(str style)
-  | fontWidth(num w)
+  | fontSize(num w)
   | marker(str marker)
+  | overflow(str overflow)
   ; 
   
 alias FigF = void(list[value]); 
@@ -101,6 +102,11 @@ Figure setProps(Figure f, list[value] vals) {
     = kws + (getName(fp): getChildren(fp)[0]); // assumes all props have 1 arg
   return ( f | setKeywordParameters(it, update(getKeywordParameters(it), fp)) | FProp fp <- vals );
 }
+
+void fig(void(Fig) block) {
+  fig(-1, -1, block);
+  }
+
 
 void fig(num w, num h, void(Fig) block) {
   list[Figure] stack = [dummy()];
@@ -194,6 +200,9 @@ void fig(num w, num h, void(Fig) block) {
   block(<_box, _ellipse, _circle, _ngon, _polygon, _htmlText, _svgText, _rotate, _at, _path, _hcat, _vcat, _overlay, _row, _grid, _html>);
   
   iprintln(stack[-1].figs[0]);
-  salix::lib::LayoutFigure::fig(stack[-1].figs[0], width=w, height=h);
+  if (w>0  && h>0)
+     salix::lib::LayoutFigure::fig(stack[-1].figs[0], width=w, height=h);
+  else
+     salix::lib::LayoutFigure::fig(stack[-1].figs[0]);
   //addNode(render(eval(stack[-1].figs[0])));
 }

@@ -13,7 +13,6 @@ alias Model = list[tuple[num width, num height]];
 
 num startWidth = 800, startHeight = 800;
 
-
 Model startModel = [<startWidth, startHeight>];
 
 data Msg
