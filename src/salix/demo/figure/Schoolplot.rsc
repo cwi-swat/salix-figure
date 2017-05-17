@@ -49,7 +49,7 @@ void myView(Model m) {
 
 App[Model] testApp() {
    return app(init, myView, update, 
-    |http://localhost:9103|, |project://salix-figure/src|);
+    |http://localhost:9104|, |project://salix-figure/src|);
    }
    
 public App[Model] c = testApp();
