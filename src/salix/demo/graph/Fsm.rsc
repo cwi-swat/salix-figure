@@ -11,12 +11,14 @@ import Set;
 import List;
 import salix::Slider;
 
+/* map[str, tuple[list[Attr], lrel[str,str, list[Attr]] 
+      ("SYN RCVD":<[], [<"close", "FINWAIT-1", []>, <"rcv ACK of SYN", "FINWAIT-1", []>]>)
+*/
+
 alias GModel = tuple[num width,num height, str  current, map[str, list[Attr]] states, lrel[str, str, list[Attr]] edges, map[str, lrel[str, str]] out];
 
 App[GModel] graphApp()
   = app(ginit, gview, gupdate, |http://localhost:9103|, |project://salix-figure/src|);
-  
-str radius = "10px";
 
 
 map[str, list[Attr]] states = (
@@ -53,8 +55,10 @@ map[str, list[Attr]] states = (
     			<"LAST-ACK",   	"CLOSED",     [edgeLabel("rcv ACK of FIN"), labelStyle(<"font-style","italic">)]>,
     			<"TIME WAIT",  	"CLOSED",     [edgeLabel("timeout=2MSL"), labelStyle(<"font-style","italic">)]>
   			];
-           
-GModel ginit() = <400, 800, "CLOSED", states, edges, getOutEdges()>;
+ 
+num startWidth = 400;
+num startHeight = 800;          
+GModel ginit() = <startWidth, startHeight, "CLOSED", states, edges, getOutEdges()>;
 
 data Msg
   = resizeX(int id, real x)
@@ -105,8 +109,7 @@ Attr colorAttribute(GModel m, str x) {
 
 void gview(GModel m) {
   num lo = 200, hi = 1000;
-  num startWidth = 400;
-  num startHeight = 800;
+ 
   list[list[list[SliderBar]]] sliderBars = [[
                              [
                               < resizeX, 0, "resize X:", lo, hi, 50, startWidth,"<lo>", "<hi>"> 
@@ -142,7 +145,6 @@ void gview(GModel m) {
       },
         () {ul(salix::HTML::style([<"list-style-type","none">]), () {
            lrel[str, str] steps = m.out[m.current];
-           // println(steps);
            for (tuple[str, str] x<-steps) {
                li((){button(salix::HTML::style([<"width", "200px">]), onClick(nextStep(x[1])), x[0]);});
               }

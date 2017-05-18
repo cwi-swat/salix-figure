@@ -68,25 +68,33 @@ function registerDagre(salix) {
 		var svg = d3.select('#' + id),
 	    	svgGroup = svg.append('g');
 		
-	
-		//var zoom = d3.behavior.zoom().on("zoom", function() {
-		//      svgGroup.attr("transform", "translate(" + d3.event.translate + ")" +
-		 //                                    "scale(" + d3.event.scale + ")");
-		//    });
-		// svg.call(zoom);
-	
+	    /*
+		var zoom = d3.behavior.zoom().on("zoom", function() {
+		     svgGroup.attr("transform", "translate(" + d3.event.translate + ")" +
+		                                     "scale(" + d3.event.scale + ")");
+		    });
+		svg.call(zoom);
+		*/
+	    // alert("aap");
 
 		var render = new dagreD3.render();
 		render(svgGroup, g);
 		rescale(g);
 		
 		function rescale(g) {
+		   var margin = 20;
 		   if (svg.attr("width")!=null && svg.attr("height")!=null) {
 		      var width = parseInt(svg.attr("width"));
 		      var height = parseInt(svg.attr("height"));
-		      var initialScaleX =  width/g.graph().width;
-		      var initialScaleY =  height/g.graph().height;
-		      svgGroup.attr("transform", "scale("+initialScaleX+","+ initialScaleY+")");
+		      var initialScaleX =  (width-margin)/g.graph().width;
+		      var initialScaleY =  (height-margin)/g.graph().height;
+		      var initialScale = Math.min(initialScaleX, initialScaleY);
+		      if (props["scale"]!=null) {
+		    	  var scale = parseFloat(props["scale"]);
+		    	  initialScale*=scale;
+		      }
+		      // svgGroup.attr("transform", "scale("+initialScaleX+","+ initialScaleY+")");
+		      svgGroup.attr("transform", "translate("+(margin)+","+(margin)+")"+"scale("+initialScale+")");
 		   }
 		   else {
 			   svg.attr("width", g.graph().width);
