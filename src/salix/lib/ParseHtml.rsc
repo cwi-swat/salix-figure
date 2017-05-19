@@ -1,4 +1,4 @@
-module salix::ParseHtml
+module salix::lib::ParseHtml
 
 import lang::xml::DOM;
 import salix::Node;

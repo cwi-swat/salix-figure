@@ -5,7 +5,7 @@ import salix::HTML;
 import salix::Core;
 import salix::App;
 import salix::lib::RenderFigure;
-import salix::Slider;
+import salix::lib::Slider;
 import Prelude;
 
 

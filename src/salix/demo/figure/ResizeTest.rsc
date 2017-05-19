@@ -7,7 +7,7 @@ import salix::App;
 import salix::lib::LayoutFigure;
 import salix::lib::RenderFigure;
 
-import salix::Slider;
+import salix::lib::Slider;
 
 
 alias Model = tuple[int width, int height];

@@ -7,7 +7,7 @@ import salix::Core;
 import salix::Node;
 import salix::lib::Figure;
 import salix::lib::Dagre;
-import salix::ParseHtml;
+import salix::lib::ParseHtml;
 import util::Reflective;
 import Prelude;
 

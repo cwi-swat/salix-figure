@@ -9,7 +9,7 @@ import IO;
 import util::Math;
 import Set;
 import List;
-import salix::Slider;
+import salix::lib::Slider;
 
 /* map[str, tuple[list[Attr], lrel[str,str, list[Attr]] 
       ("SYN RCVD":<[], [<"close", "FINWAIT-1", []>, <"rcv ACK of SYN", "FINWAIT-1", []>]>)

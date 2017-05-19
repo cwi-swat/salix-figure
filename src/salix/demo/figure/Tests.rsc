@@ -6,7 +6,7 @@ import salix::lib::RenderFigure;
 import salix::HTML;
 import salix::Core;
 import salix::App;
-import salix::Slider;
+import salix::lib::Slider;
 
 //-------------------------------------------------------------------MODEL--------------------------------------------------------------------------------
 

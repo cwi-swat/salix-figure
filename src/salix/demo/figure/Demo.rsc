@@ -6,7 +6,7 @@ import salix::lib::Figure;
 import salix::lib::RenderFigure;
 import salix::Core;
 import salix::App;
-import salix::Slider;
+import salix::lib::Slider;
 
 alias Model = list[tuple[num shrink, num grow]];
 

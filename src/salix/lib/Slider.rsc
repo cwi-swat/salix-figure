@@ -1,4 +1,4 @@
-module salix::Slider
+module salix::lib::Slider
 import salix::HTML;
 import Prelude;
 
