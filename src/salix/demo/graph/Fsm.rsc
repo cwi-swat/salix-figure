@@ -11,81 +11,115 @@ import Set;
 import List;
 import salix::lib::Slider;
 
-/* map[str, tuple[list[Attr], lrel[str,str, list[Attr]] 
-      ("SYN RCVD":<[], [<"close", "FINWAIT-1", []>, <"rcv ACK of SYN", "FINWAIT-1", []>]>)
-*/
-
-alias GModel = tuple[num width,num height, str  current, map[str, list[Attr]] states, lrel[str, str, list[Attr]] edges, map[str, lrel[str, str]] out];
-
-App[GModel] graphApp()
-  = app(ginit, gview, gupdate, |http://localhost:9103|, |project://salix-figure/src|);
-
-
-map[str, list[Attr]] states = (
-                "CLOSED":[],              
-    			"LISTEN": [],
-    			"SYN RCVD":[],
-				"SYN SENT": [],	
-                "ESTAB" : [],	
-                "FINWAIT-1": [],
-                "CLOSE WAIT": [],
-                "FINWAIT-2": [],
-                "CLOSING":  [],
-                "LAST-ACK": [],
-                "TIME WAIT": []
-           );
-           
-           
- lrel[str, str, list[Attr]] edges = [<"CLOSED", "LISTEN",  [edgeLabel("open"), labelStyle([<"font-weight","bold">,<"fill","blue">])]>, 
-    			<"LISTEN", "SYN RCVD",[edgeLabel("rcv SYN"), labelPos("r"), labelStyle([<"font-style","italic">, <"lineColor", "red">])]>,
-    			<"LISTEN", "SYN SENT",[edgeLabel("send"), labelPos("r"), labelStyle([<"font-style","italic">, <"lineColor", "red">])]>,
-    			<"LISTEN",		"CLOSED",    [edgeLabel("close"), labelStyle(<"font-style","italic">)]>,
-    			<"SYN RCVD", 	"FINWAIT-1", [edgeLabel("close"), labelStyle(<"font-style","italic">)]>,
-    			<"SYN RCVD", 	"ESTAB",     [edgeLabel("rcv ACK of SYN"), labelStyle(<"font-style","italic">)]>,
-    			<"SYN SENT",   	"SYN RCVD",  [edgeLabel("rcv SYN"), labelStyle(<"font-style","italic">)]>,		
-   				<"SYN SENT",   	"ESTAB",     [edgeLabel("rcv SYN, ACK"), labelStyle(<"font-style","italic">)]>,
-    			<"SYN SENT",   	"CLOSED",    [edgeLabel("close"), labelStyle(<"font-style","italic">)]>,
-    			<"ESTAB", 		"FINWAIT-1", [edgeLabel("close"), labelStyle(<"font-style","italic">)]>,
-    			<"ESTAB", 		"CLOSE WAIT",[edgeLabel("rcv FIN"), labelStyle(<"font-style","italic">)]>,
-    			<"FINWAIT-1",  	"FINWAIT-2",  [edgeLabel("rcv ACK of FIN"), labelStyle(<"font-style","italic">)]>,
-    			<"FINWAIT-1",  	"CLOSING",    [edgeLabel("rcv FIN"), labelStyle(<"font-style","italic">)]>,
-    			<"CLOSE WAIT", 	"LAST-ACK",    [edgeLabel("close"), labelStyle(<"font-style","italic">)]>,
-    			<"FINWAIT-2",  	"TIME WAIT",  [edgeLabel("rcv FIN"), labelStyle(<"font-style","italic">)]>,
-    			<"CLOSING",    	"TIME WAIT",  [edgeLabel("rcv ACK of FIN"), labelStyle(<"font-style","italic">)]>,
-    			<"LAST-ACK",   	"CLOSED",     [edgeLabel("rcv ACK of FIN"), labelStyle(<"font-style","italic">)]>,
-    			<"TIME WAIT",  	"CLOSED",     [edgeLabel("timeout=2MSL"), labelStyle(<"font-style","italic">)]>
-  			];
- 
-num startWidth = 400;
-num startHeight = 800;          
-GModel ginit() = <startWidth, startHeight, "CLOSED", states, edges, getOutEdges()>;
+alias Model = tuple[num width,num height, Fsm fsm];
 
 data Msg
   = resizeX(int id, real x)
   | resizeY(int id, real y)
   | nextStep(str to)
   ;
+  
+public data Fsm = fsm(str current,  
+           map[str, tuple[list[Attr(Model, str)] attrs, lrel[str, str, list[value(Model, Msg(str), str, str, str)]] out]] graph);
+
+Attr currentMarker(Model m, str x) {
+    return salix::HTML::style([<"background-color",x==m.fsm.current?"red":"antiquewhite">]);
+    }
+
+App[Model] graphApp()
+  = app(ginit, gview, gupdate, |http://localhost:9103|, |project://salix-figure/src|);
+  
+void() next(Model m, Msg(str) msg, str from, str lab, str to) {
+    return () {button(salix::HTML::style([<"width", "200px">]), onClick(msg(to)), lab);
+               p(m.fsm.current);
+              };
+    }
+    
+
+Fsm fsm = fsm("CLOSED", 
+        (
+         "CLOSED": <[currentMarker], [<"open", "LISTEN", [next]>]>
+        ,"LISTEN": <[currentMarker], [<"rcv SYN", "SYN RCVD", [next]>
+                        ,<"send", "SYN SENT", [next]>
+                        ,<"close", "CLOSED", [next]>
+                        ]>
+        ,"SYN RCVD": <[currentMarker], [<"close", "FINWAIT-1", [next]>
+                          ,<"rcv ACK of SYN", "ESTAB", [next]>
+                          ]>
+        ,"SYN SENT": <[currentMarker], [<"rcv SYN", "SYN RCVD", [next]>
+                          ,<"rcv SYN, ACK", "ESTAB", [next]>
+                          ,<"close", "CLOSED", [next]>
+                        ]>
+        ,"FINWAIT-1": <[currentMarker],[<"rcv ACK of FIN", "FINWAIT-2", [next]>
+                          ,<"rcv FIN", "CLOSING", [next]>
+                          ]>
+        ,"ESTAB": <[currentMarker],    [<"close", "FINWAIT-1", [next]>
+                          ,<"rcv FIN", "CLOSE WAIT", [next]>
+                          ]>
+        ,"CLOSE WAIT": <[currentMarker], [<"close", "LAST-ACK", [next]>]>
+        ,"FINWAIT-2": <[currentMarker], [<"rcv FIN", "TIME WAIT", [next]>]>
+        ,"CLOSING": <[currentMarker], [<"rcv ACK of FIN", "TIME WAIT", [next]>]>
+        ,"LAST-ACK": <[currentMarker], [<"rcv ACK of FIN", "CLOSED", [next]>]>  
+        ,"TIME WAIT": <[currentMarker], [<"timeout", "CLOSED", [next]>]>              
+        ));
+        
+ public void paintFsm(Fsm fsm, Model m, Msg(str x) msg, list[Attr] attrs) {
+        rowLayout(() {
+        dagre("mygraph"  
+            ,attrs+
+             [(N n, E e) {
+             for (str x <- fsm.graph) {
+                list[Attr] attrs = [attr(m, x)|attr<-fsm.graph[x].attrs];
+                 attrs+=[salix::HTML::class("node-content")];
+                 n(x, [salix::Node::attr("padding","0")]+[() { 
+                 div(attrs+[() {
+	                p(x);   
+	                }]);
+                   }]);
+                 }
+            for (str x <- fsm.graph) {
+              lrel[str, str, list[value(Model, Msg(str), str, str, str)]] out = fsm.graph[x].out;
+               for (tuple[str lab, str to , list[value(Model, Msg(str), str, str, str)] attrs] edge <-out) {
+                 list[value] attrs = [edgeLabel(edge.lab)]+[attr(m , msg, x, edge.lab, edge.to)|attr<-edge.attrs];
+                 e(x, edge.to, attrs);
+               }
+            }
+           }
+         ]);  
+       }
+       , () {ul(salix::HTML::style([<"list-style-type","none">]), () {
+           lrel[str, str, list[value(Model, Msg(str), str, str, str)]] steps = fsm.graph[fsm.current].out;
+           for (tuple[str, str, list[value(Model, Msg(str), str, str, str)]] x<-steps) {
+               li((){
+              // button(salix::HTML::style([<"width", "200px">]), onClick(msg(x[1])), x[0]); 
+              if (x[2] != [],value(Model, Msg(str), str, str, str) f:= x[2][-1]) { 
+                        if (void()  g:=f(m, msg, fsm.current, x[0], x[1])) g();
+                    }           
+               });
+              }
+           });
+           }
+      );    
+   }
+  			
+num startWidth = 400;
+num startHeight = 800;          
+
+Model ginit() = <startWidth, startHeight, fsm>;
 
 
-GModel gupdate(Msg msg, GModel m) {
+
+
+Model gupdate(Msg msg, Model m) {
   switch (msg) {
     case resizeX(_, real x): m.width = x;
     case resizeY(_, real y): m.height = y;
     case nextStep(str to): {
-       m.current=to;
+       m.fsm.current=to;
     }
   }
   return m;
 }
-
-map[str, lrel[str, str]] getOutEdges() {
-     map[str,  lrel[str, str]] r = (x:[]|str x<-states);
-     for (tuple[str from, str to , list[Attr] attrs] x<-edges) {
-        for (/ attr("label", str lab):=x.attrs)
-                 r[x.from]=r[x.from]+[<lab, x.to>]; 
-         }
-     return r; 
-     }
      
 void rowLayout(void() fs...) {
      table( (){
@@ -103,11 +137,11 @@ void rowLayout(void() fs...) {
 
 // http://stackoverflow.com/questions/26348038/svg-foreignobjects-draw-over-all-other-elements-in-chrome?rq=1
 
-Attr colorAttribute(GModel m, str x) {
-    return salix::HTML::style([<"background-color",x==m.current?"red":"antiquewhite">]);
+Attr colorAttribute(str x) {
+    return salix::HTML::style([<"background-color",x==fsm.current?"red":"antiquewhite">]);
     }
 
-void gview(GModel m) {
+void gview(Model m) {
   num lo = 200, hi = 1000;
  
   list[list[list[SliderBar]]] sliderBars = [[
@@ -121,40 +155,11 @@ void gview(GModel m) {
   div(() { 
     h2("Final state machine"); 
     slider(sliderBars);
-    rowLayout(() {
-      dagre("mygraph" /*rankdir("LR"),*/ 
-       ,salix::SVG::width("<m.width>px"), salix::SVG::height("<m.height>px")
-         , (N n, E e) {
-      for (str x <- m.states) {
-       list[Attr] attrs = m.states[x];
-       attrs+=[salix::HTML::class("node-content")];
-       attrs+=[colorAttribute(m, x)];
-       // attrs += shape("rect");
-        n(x, [salix::Node::attr("padding","0")]+[() { 
-          div(attrs+[() {
-	          p(x);
-	          //svg(salix::SVG::width("40"),salix::SVG::height("40"), (){salix::SVG::circle(salix::SVG::r("10"), cx("15"), cy("15"), fill("red"));});   
-	        }]);
-        }]);
-      }
-      for (<str x, str y, list[Attr] attrs> <- m.edges) {
-        e(x, y, attrs+[lineInterpolate("lineair")]);
-        }
-       }
-      );
-      },
-        () {ul(salix::HTML::style([<"list-style-type","none">]), () {
-           lrel[str, str] steps = m.out[m.current];
-           for (tuple[str, str] x<-steps) {
-               li((){button(salix::HTML::style([<"width", "200px">]), onClick(nextStep(x[1])), x[0]);});
-              }
-           });
-           }
-    );         
+    paintFsm(m.fsm, m, nextStep, [salix::SVG::width("<m.width>px"), salix::SVG::height("<m.height>px")]);          
   });
 }
 
-public App[GModel] c = graphApp();
+public App[Model] c = graphApp();
 
 public void main() {
      c.stop();

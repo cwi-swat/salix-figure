@@ -67,20 +67,22 @@ function registerDagre(salix) {
 		
 		var svg = d3.select('#' + id),
 	    	svgGroup = svg.append('g');
-		
-	    /*
 		var zoom = d3.behavior.zoom().on("zoom", function() {
-		     svgGroup.attr("transform", "translate(" + d3.event.translate + ")" +
+		     svgGroup.attr("transform", // "translate(" + d3.event.translate + ")" +
 		                                     "scale(" + d3.event.scale + ")");
 		    });
 		svg.call(zoom);
-		*/
 	    // alert("aap");
 
 		var render = new dagreD3.render();
 		render(svgGroup, g);
 		rescale(g);
-		
+		var initialScale = 1;
+		zoom
+		  //.translate([(svg.attr("width") - g.graph().width * initialScale) / 2, 20])
+		  .scale(initialScale)
+		 // .event(svg)
+		  ;
 		function rescale(g) {
 		   var margin = 20;
 		   if (svg.attr("width")!=null && svg.attr("height")!=null) {
