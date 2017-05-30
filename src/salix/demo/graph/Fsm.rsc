@@ -9,70 +9,27 @@ import IO;
 import util::Math;
 import Set;
 import List;
+import String;
 import salix::lib::Slider;
+import salix::lib::Form;
 
-Msg(str) partial(Msg(str, str) f, str p) {return Msg(str y){return f(p, y);};}
+Msg(str) partial(Msg(int, str) f, int p) {return Msg(str y){return f(p, y);};}
 
 alias Constraint = tuple[bool(Model m) cond, str emsg];
 
-alias FormEntry = tuple[str idx, value startValue, str fieldName, list[Constraint] constraints];
+alias FormEntry = tuple[value startValue, str fieldName, str (Model m) emsg];
 
-alias Model = tuple[num width,num height, Fsm fsm, str buffer, str name];
+alias Model = tuple[num width,num height, Fsm fsm, str buffer, str name, str emsg];
 
 data Msg
   = resizeX(int id, real x)
   | resizeY(int id, real y)
-  | nextStep(str to)
-  | changeText(str idx, str txt)
+  | nextStep(int id, str next)  // idx<0 -> (next=to) idx>=0 -> (next=inputtext)
+  // | changeText(str idx, str txt)
   ;
   
-
-void formRow(Model m, Msg(str, str) msg, FormEntry fe) {
-    tr([]+[() {
-             if (str s:=fe.startValue) {
-                td(() {
-                  salix::HTML::span(fe.fieldName);
-                  });
-                td(() {
-                  input(salix::HTML::\type("text"), salix::HTML::size("10"), salix::HTML::\value(s)
-                  ,onInput(partial(msg, fe.idx)));
-                  });
-                }
-                 td(() {
-                  for (Constraint c<-fe.constraints)  {
-                      if (!c.cond(m)) {
-                           salix::HTML::span(c.emsg);
-                           }
-                      }
-                  });            
-             }]
-          );
-    }
-  
-
-(void() (Model, Msg(str), str, str, str)) genInputNext(str buttonLab, list[FormEntry] lines) {
-  return void() (Model m, Msg(str) msg , str from, str lab, str to) {
-         return () {
-            list[tuple[str, str]] styles = [<"min-width", "400px">
-                                         , <"border-width","2">
-                                         // , <"border-color","black">
-                                         , <"border-style", "groove">];
-            table([salix::HTML::style(styles)]+[() {
-              for (FormEntry  fe <-lines)
-                 formRow(m, changeText, fe); 
-             tr(() {
-               td([salix::HTML::colspan(2), salix::HTML::align("center")]+[() {
-                   button(salix::HTML::style([<"width", "200px">]), onClick(msg(to)), buttonLab);
-               }]);
-               }); 
-           }]);
-      
-      };
-      };
-  }
-  
 public data Fsm = fsm(str current,  
-           map[str, tuple[list[Attr(Model, str)] attrs, lrel[str, str, list[value(Model, Msg(str), str, str, str)]] out]] graph);
+           map[str, tuple[list[Attr(Model, str)] attrs, lrel[str, str, list[value(Model, Msg(int, str), str)]] out]] graph);
 
 Attr currentMarker(Model m, str x) {
     return salix::HTML::style([<"background-color",x==m.fsm.current?"red":"antiquewhite">]);
@@ -81,64 +38,40 @@ Attr currentMarker(Model m, str x) {
 App[Model] graphApp()
   = app(ginit, gview, gupdate, |http://localhost:9103|, |project://salix-figure/src|);
   
-  
-void() inputNext(Model m, Msg(str) msg, str from, str lab, str to) {
-  list[tuple[str, str]] style = [<"border-style", "solid">, <"border-color","grey"> 
-      , <"border-width","2">];
-  return () {table(() {
-      tr(() {
-         td(() {
-           button(salix::HTML::style([<"width", "200px">]), onClick(msg(to)), lab);
-           });
-         td(salix::HTML::style(style), "Name:");
-         td(() {
-            input(salix::HTML::\type("text"), salix::HTML::size("10"), salix::HTML::\value("")
-            , onInput(changeText));
-            }) ;
-           });   
-         });
-  };
-  }
-  
-void() next(Model m, Msg(str) msg, str from, str lab, str to) {
-    return () {
-              button(salix::HTML::style([<"width", "200px">]), onClick(msg(to)), lab);
-              };
-    }
     
 
 Fsm fsm = fsm("CLOSED", 
         (
-         "CLOSED": <[currentMarker], [<"open", "LISTEN", [genInputNext("open", 
+         "CLOSED": <[currentMarker], [<"open", "LISTEN", [formPanel("open", 
              [
-             <"1", "Bert", "First Name", []>
-             ,<"2", "Lisser", "Second Name", []>
+             < "Bert", "First Name", str(Model m) {return m.emsg;}>
+             ,<"Lisser", "Second Name", str(Model m) {return "aap"+m.emsg;}>
              ])]>]>
-        , "LISTEN": <[currentMarker], [<"rcv SYN", "SYN RCVD", [next]>
-                        ,<"send", "SYN SENT", [next]>
-                        ,<"close", "CLOSED", [next]>
+        , "LISTEN": <[currentMarker], [<"rcv SYN", "SYN RCVD", [formPanel("rcv SYN", [])]>
+                        ,<"send", "SYN SENT",[formPanel("send", [])] >
+                        ,<"close", "CLOSED", [formPanel("close", [])]>
                         ]>
-        ,"SYN RCVD": <[currentMarker], [<"close", "FINWAIT-1", [next]>
-                          ,<"rcv ACK of SYN", "ESTAB", [next]>
+        ,"SYN RCVD": <[currentMarker], [<"close", "FINWAIT-1", [formPanel("close", [])]>
+                          ,<"rcv ACK of SYN", "ESTAB", [formPanel("rcv ACK of SYN", [])]>
                           ]>
-        ,"SYN SENT": <[currentMarker], [<"rcv SYN", "SYN RCVD", [next]>
-                          ,<"rcv SYN, ACK", "ESTAB", [next]>
-                          ,<"close", "CLOSED", [next]>
+        ,"SYN SENT": <[currentMarker], [<"rcv SYN", "SYN RCVD", [formPanel("rcv SYN", [])]>
+                          ,<"rcv SYN, ACK", "ESTAB", [formPanel("rcv SYN, ACK", [])]>
+                          ,<"close", "CLOSED", [formPanel("close", [])]>
                         ]>
-        ,"FINWAIT-1": <[currentMarker],[<"rcv ACK of FIN", "FINWAIT-2", [next]>
-                          ,<"rcv FIN", "CLOSING", [next]>
+        ,"FINWAIT-1": <[currentMarker],[<"rcv ACK of FIN", "FINWAIT-2", [formPanel("rcv ACK of FIN", [])]>
+                          ,<"rcv FIN", "CLOSING", [formPanel("rcv FIN", [])]>
                           ]>
-        ,"ESTAB": <[currentMarker],    [<"close", "FINWAIT-1", [next]>
-                          ,<"rcv FIN", "CLOSE WAIT", [next]>
+        ,"ESTAB": <[currentMarker],    [<"close", "FINWAIT-1", [formPanel("close", [])]>
+                          ,<"rcv FIN", "CLOSE WAIT", [formPanel("rcv FIN", [])]>
                           ]>
-        ,"CLOSE WAIT": <[currentMarker], [<"close", "LAST-ACK", [next]>]>
-        ,"FINWAIT-2": <[currentMarker], [<"rcv FIN", "TIME WAIT", [next]>]>
-        ,"CLOSING": <[currentMarker], [<"rcv ACK of FIN", "TIME WAIT", [next]>]>
-        ,"LAST-ACK": <[currentMarker], [<"rcv ACK of FIN", "CLOSED", [next]>]>  
-        ,"TIME WAIT": <[currentMarker], [<"timeout", "CLOSED", [next]>]>              
+        ,"CLOSE WAIT": <[currentMarker], [<"close", "LAST-ACK", [formPanel("close", [])]>]>
+        ,"FINWAIT-2": <[currentMarker], [<"rcv FIN", "TIME WAIT", [formPanel("rcv FIN", [])]>]>
+        ,"CLOSING": <[currentMarker], [<"rcv ACK of FIN", "TIME WAIT", [formPanel("rcv ACK of FIN", [])]>]>
+        ,"LAST-ACK": <[currentMarker], [<"rcv ACK of FIN", "CLOSED", [formPanel("rcv ACK of FIN", [])]>]>  
+        ,"TIME WAIT": <[currentMarker], [<"timeout", "CLOSED", [formPanel("timeout", [])]>]>              
         ));
         
- public void paintFsm(Fsm fsm, Model m, Msg(str x) msg, list[Attr] attrs) {
+ public void paintFsm(Fsm fsm, Model m, Msg(int id, str x) msg, list[Attr] attrs) {
         rowLayout(() {
         dagre("mygraph"  
             ,attrs+
@@ -153,9 +86,9 @@ Fsm fsm = fsm("CLOSED",
                    }]);
                  }
             for (str x <- fsm.graph) {
-              lrel[str, str, list[value(Model, Msg(str), str, str, str)]] out = fsm.graph[x].out;
-               for (tuple[str lab, str to , list[value(Model, Msg(str), str, str, str)] attrs] edge <-out) {
-                 list[value] attrs = [edgeLabel(edge.lab)]+[attr(m , msg, x, edge.lab, edge.to)|attr<-edge.attrs];
+              lrel[str, str, list[value(Model, Msg(int, str), str)]] out = fsm.graph[x].out;
+               for (tuple[str lab, str to , list[value(Model, Msg(int, str), str)] attrs] edge <-out) {
+                 list[value] attrs = [edgeLabel(edge.lab)]+[attr(m , msg, edge.to)|attr<-edge.attrs];
                  e(x, edge.to, attrs);
                }
             }
@@ -163,12 +96,12 @@ Fsm fsm = fsm("CLOSED",
          ]);  
        }
        , () {ul(salix::HTML::style([<"list-style-type","none">]), () {
-           lrel[str, str, list[value(Model, Msg(str), str, str, str)]] steps = fsm.graph[fsm.current].out;
-           for (tuple[str, str, list[value(Model, Msg(str), str, str, str)]] x<-steps) {
+           lrel[str, str, list[value(Model, Msg(int, str), str)]] steps = fsm.graph[fsm.current].out;
+           for (tuple[str, str, list[value(Model, Msg(int, str), str)]] x<-steps) {
                li((){
               // button(salix::HTML::style([<"width", "200px">]), onClick(msg(x[1])), x[0]); 
-              if (x[2] != [],value(Model, Msg(str),  str, str, str) f:= x[2][-1]) { 
-                        if (void()  g:=f(m, msg, fsm.current, x[0], x[1])) g();
+              if (x[2] != [],value(Model, Msg(int, str),  str) f:= x[2][-1]) { 
+                        if (void()  g:=f(m, msg,  x[1])) g();
                     }           
                });
               }
@@ -180,25 +113,25 @@ Fsm fsm = fsm("CLOSED",
 num startWidth = 400;
 num startHeight = 800;          
 
-Model ginit() = <startWidth, startHeight, fsm, "", "">;
-
-
-
+Model ginit() = <startWidth, startHeight, fsm, "", "", "start">;
 
 Model gupdate(Msg msg, Model m) {
   switch (msg) {
     case resizeX(_, real x): m.width = x;
     case resizeY(_, real y): m.height = y;
-    case nextStep(str to): {
-       if (m.fsm.current== "LISTEN" && to=="SYN RCVD") {
-          m.name = m.buffer;
-          m.buffer = "";
-          }
-       m.fsm.current=to;
+    case nextStep(int id, str to): {
+       if (id<0) {
+             //if (isEmpty(m.buffer)) m.emsg="empty";
+             //else 
+             {
+                m.name = m.buffer;
+                m.buffer = "";      
+                m.fsm.current=to;
+                m.emsg = "go";
+                }
+           }
+       else m.buffer=to;  // Text
        }
-    case changeText(str idx, str txt): {
-       m.buffer = txt;
-    }
   }
   return m;
 }
