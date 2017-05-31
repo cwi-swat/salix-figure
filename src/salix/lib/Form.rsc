@@ -17,27 +17,25 @@ data Msg;
 
 Msg(str) partial(Msg(int, str) f, int p) {return Msg(str y){return f(p, y);};}
 
-alias FormEntry[&T] = tuple[value startValue, str fieldName, str (&T m) emsg];
+alias FormEntry[&T] = tuple[str fieldName, str (&T) val, str (&T) emsg];
 
 //app[&T] app(&T() init, void(&T) view, &T(Msg, &T) update, loc http, loc static, 
  //           Subs[&T] subs = noSubs, str root = "root", Parser parser = parseMsg) { 
 
-void formRow(&T m, Msg(int, str) msg, FormEntry[&T] fe, int id, str(&T) emsg) {
-    tr([]+[() {
-             if (str s:=fe.startValue) {
+void formRow(&T m, Msg(int, str) msg, FormEntry[&T] fe, int id) {
+    tr([]+[() {       
                 td(() {
                   salix::HTML::span(fe.fieldName);
                   });
                 td(() {
-                  input(salix::HTML::\type("text"), salix::HTML::size("10"), salix::HTML::\value(s)
+                  input(salix::HTML::\type("text"), salix::HTML::size("10"), salix::HTML::\value(fe.val(m))
                   ,onInput(partial(msg, id)));
                   });
                  list[tuple[str, str]] styles = [<"border-style", "groove">, <"border-width", "4">];
-                 td([salix::HTML::width(180), salix::HTML::style(styles)]+[() {    
+                 td([salix::HTML::width(250), salix::HTML::style(styles)]+[() {    
                  list[tuple[str, str]] styles = [<"color","red">];
-                 salix::HTML::span(salix::HTML::style(styles), emsg(m));             
-                  }]); 
-                  }           
+                 salix::HTML::span(salix::HTML::style(styles), fe.emsg(m));             
+                  }]);           
              }]
           );
     }
@@ -53,7 +51,7 @@ void formRow(&T m, Msg(int, str) msg, FormEntry[&T] fe, int id, str(&T) emsg) {
             table([salix::HTML::style(styles)]+[() {
               int id = 0;
               for (FormEntry  fe <-lines) {
-                 formRow(m, msg, fe, id, fe.emsg); 
+                 formRow(m, msg, fe, id); 
                  id += 1;
                  }
              tr(() {

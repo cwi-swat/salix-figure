@@ -17,8 +17,6 @@ Msg(str) partial(Msg(int, str) f, int p) {return Msg(str y){return f(p, y);};}
 
 alias Constraint = tuple[bool(Model m) cond, str emsg];
 
-alias FormEntry = tuple[value startValue, str fieldName, str (Model m) emsg];
-
 alias Model = tuple[num width,num height, Fsm fsm, str buffer, str name, str emsg];
 
 data Msg
@@ -44,8 +42,8 @@ Fsm fsm = fsm("CLOSED",
         (
          "CLOSED": <[currentMarker], [<"open", "LISTEN", [formPanel("open", 
              [
-             < "Bert", "First Name", str(Model m) {return m.emsg;}>
-             ,<"Lisser", "Second Name", str(Model m) {return "aap"+m.emsg;}>
+             < "First Name", str(Model m) {return "";}, str(Model m) {return m.emsg;}>
+             ,<"Second Name", str(Model m) {return "";}, str(Model m) {return m.emsg;}>
              ])]>]>
         , "LISTEN": <[currentMarker], [<"rcv SYN", "SYN RCVD", [formPanel("rcv SYN", [])]>
                         ,<"send", "SYN SENT",[formPanel("send", [])] >
@@ -113,7 +111,7 @@ Fsm fsm = fsm("CLOSED",
 num startWidth = 400;
 num startHeight = 800;          
 
-Model ginit() = <startWidth, startHeight, fsm, "", "", "start">;
+Model ginit() = <startWidth, startHeight, fsm, "", "", "">;
 
 Model gupdate(Msg msg, Model m) {
   switch (msg) {
@@ -127,7 +125,7 @@ Model gupdate(Msg msg, Model m) {
                 m.name = m.buffer;
                 m.buffer = "";      
                 m.fsm.current=to;
-                m.emsg = "go";
+                m.emsg = "";
                 }
            }
        else m.buffer=to;  // Text

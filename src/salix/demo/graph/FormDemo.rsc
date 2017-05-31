@@ -4,7 +4,6 @@ import salix::App;
 import salix::HTML;
 import salix::SVG;
 import salix::Node;
-import salix::lib::Dagre;
 import IO;
 import util::Math;
 import Set;
@@ -16,23 +15,39 @@ import salix::lib::Slider;
 num startWidth = 400;
 num startHeight = 800;       
 
-alias Model = tuple[num width,num height, str name1, str name2, list[str] buffer, list[str] emsg, bool disabled];
+alias Model = tuple[num width,num height, str name1, str name2, str postCode, list[str] buffer, list[str] emsg, bool disabled,
+                    bool visible];
 
 data Msg
   = resizeX(int id, real x)
   | resizeY(int id, real y)
   | ok(int id, str txt)  
+  | open(str txt)
   ;
   
-Model finit() = <startWidth, startHeight, "", "", ["Bert","Lisser"],  ["",""], false>;
+int nVars= 3;
 
-list[int] isEmpty(Model m) {
-   list[int] r =[];
+list[str] emptyFields() = [""|_<-[0..nVars]];
+  
+Model finit() = <startWidth, startHeight, "", "", "", emptyFields(),  emptyFields(), false, false>;
+
+bool isDig(str s) = /^[0-9]+$/:=s;
+bool isLetterCode(str s) = /^[A-Z]+$/:=s; 
+
+list[tuple[int, str]] isCorrect(Model m) {
+   list[tuple[int, str]] r =[];
+   list[str] c =[];
    int i =  0;
    for (str b<-m.buffer)  {
-         if (isEmpty(b)) r+=[i];
+         if (isEmpty(b)) r+=[<i, "empty field">];
+         else c+= b;
          i += 1;
-         } 
+         }
+   if (size(m.buffer[2])!=6) r+=<2, "Length of post code must be 6">;
+   else
+   if (!isDig(substring(m.buffer[2], 0, 4))) r+=<2, "Digits expected">;
+   else
+   if (!isLetterCode(substring(m.buffer[2], 4, 6))) r+=<2, "Letters expected">;
    return r;
    }   
 
@@ -43,27 +58,34 @@ Model fupdate(Msg msg, Model m) {
     case ok(int id, str txt): {
        if (id<0) {
                   {
-                  m.name1 = m.buffer[0]; m.buffer[0]="";m.emsg[0]="";
-                  m.name2 = m.buffer[1]; m.buffer[1]="";m.emsg[1]="";  
-                  m.disabled = true;          
+                  list[tuple[int, str]] wrong = isCorrect(m);
+                  if (isEmpty(wrong)) {
+                       m.name1 = m.buffer[0]; m.buffer[0]="";m.emsg[0]="";
+                       m.name2 = m.buffer[1]; m.buffer[1]="";m.emsg[1]="";  
+                       m.postCode = m.buffer[2]; m.buffer[2]="";m.emsg[2]="";  
+                       m.visible = false;
+                       }  
+                  else 
+                    for (tuple[int, str] t<-wrong) m.emsg[t[0]]=t[1];       
                   }
            }
        else {
            m.buffer[id]=txt;  // Text
-           m.emsg[0]=""; m.emsg[1]="";
-           list[int] wrong = isEmpty(m);
-           m.disabled = !isEmpty(wrong); 
-           for (int i<-wrong) m.emsg[i]="empty <i>";
+           m.emsg[id]="";   
            }
        }
+     case open(str text): {
+         m.visible = true;
+         }
   }
   return m;
 }
 
 
 list[FormEntry] lines = [
-              < "Bert", "First Name", str(Model m) {return m.emsg[0];}>
-             ,<"Lisser", "Second Name", str(Model m) {return m.emsg[1];}>
+              < "First Name", str(Model m) {return m.buffer[0];}, str(Model m) {return m.emsg[0];}>
+             ,<"Second Name", str(Model m) {return m.buffer[1];}, str(Model m) {return m.emsg[1];}>
+             ,<"Post Code", str(Model m) {return m.buffer[2];}, str(Model m) {return m.emsg[2];}>
              ];
 
 void fview(Model m) {
@@ -81,9 +103,12 @@ void fview(Model m) {
   div(() { 
     h2("Form"); 
     slider(sliderBars);
-    div([salix::SVG::width("<m.width>px"), salix::SVG::height("<m.height>px")],
+    if (m.visible) 
+        div([salix::SVG::width("<m.width>px"), salix::SVG::height("<m.height>px")],
             () {f(); }
-       );          
+       ); 
+    else button(salix::HTML::style([<"width", "200px">]), onClick(open("open")), 
+                   "open");        
   });
 }
 

@@ -188,16 +188,15 @@ public data Figure(
 
    | graph(list[tuple[str, Figure]] nodes = [], list[Edge] edges = [], map[str, NodeProperty] nodeProperty = (), 
      GraphOptions graphOptions = graphOptions(), map[str, str] figId=())
- /*
    | tree(Figure root, list[Figure] figs
 	       ,int xSep = 1, int ySep = 2, str pathColor = "black"
 	       ,Orientation orientation = topDown()
 	       ,bool manhattan=false
 // For memory management
-	       , int refinement=5, int rasterHeight=150)     
+       , int refinement=5, int rasterHeight=150)     
+//
+//   |pack(Figures fs)
 
-   |pack(Figures fs)
-*/
    ;
    
 data GraphOptions = graphOptions(
