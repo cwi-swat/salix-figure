@@ -15,7 +15,7 @@ import salix::lib::Slider;
 num startWidth = 400;
 num startHeight = 800;       
 
-alias Model = tuple[num width,num height, str name1, str name2, str postCode, list[str] buffer, list[str] emsg, bool disabled,
+alias Model = tuple[num width,num height, str name1, str name2, str postCode, str sexe, map[str, bool] kind, list[str] buffer, list[str] emsg, bool disabled,
                     bool visible];
 
 data Msg
@@ -28,11 +28,13 @@ data Msg
 int nVars= 3;
 
 list[str] emptyFields() = [""|_<-[0..nVars]];
-  
-Model finit() = <startWidth, startHeight, "", "", "", emptyFields(),  emptyFields(), false, false>;
 
-bool isDig(str s) = /^[0-9]+$/:=s;
-bool isLetterCode(str s) = /^[A-Z]+$/:=s; 
+map[str, bool] defaultKind = ("aap":true,"noot":false, "mies":false);
+  
+Model finit() = <startWidth, startHeight, "", "", "", "", defaultKind, emptyFields(),  emptyFields(), false, false>;
+
+bool isDig(value v) =  (str s:=v) ?  /^[0-9]+$/:=s : false;
+bool isLetterCode(value v) = (str s:=v) ? /^[A-Z]+$/:=s : false; 
 
 list[tuple[int, str]] isCorrect(Model m) {
    list[tuple[int, str]] r =[];
@@ -43,11 +45,13 @@ list[tuple[int, str]] isCorrect(Model m) {
          else c+= b;
          i += 1;
          }
+   /*
    if (size(m.buffer[2])!=6) r+=<2, "Length of post code must be 6">;
    else
    if (!isDig(substring(m.buffer[2], 0, 4))) r+=<2, "Digits expected">;
    else
    if (!isLetterCode(substring(m.buffer[2], 4, 6))) r+=<2, "Letters expected">;
+   */
    return r;
    }   
 
@@ -62,7 +66,9 @@ Model fupdate(Msg msg, Model m) {
                   if (isEmpty(wrong)) {
                        m.name1 = m.buffer[0]; m.buffer[0]="";m.emsg[0]="";
                        m.name2 = m.buffer[1]; m.buffer[1]="";m.emsg[1]="";  
-                       m.postCode = m.buffer[2]; m.buffer[2]="";m.emsg[2]="";  
+                       m.postCode = m.buffer[2]; m.buffer[2]="";m.emsg[2]=""; 
+                       println(m.kind); 
+                       m.kind = defaultKind;
                        m.visible = false;
                        }  
                   else 
@@ -70,9 +76,16 @@ Model fupdate(Msg msg, Model m) {
                   }
            }
        else {
-           m.buffer[id]=txt;  // Text
-           m.emsg[id]="";   
-           }
+           if (id<3) {
+              m.buffer[id]=txt;  // Text
+              m.emsg[id]=""; 
+              } 
+           if (id==3) m.sexe  = txt;
+           if (id==4) {
+                       m.kind[txt] = true;
+                       println(m.kind); 
+                       }
+             }
        }
      case open(str text): {
          m.visible = true;
@@ -86,6 +99,10 @@ list[FormEntry] lines = [
               < "First Name", str(Model m) {return m.buffer[0];}, str(Model m) {return m.emsg[0];}>
              ,<"Second Name", str(Model m) {return m.buffer[1];}, str(Model m) {return m.emsg[1];}>
              ,<"Post Code", str(Model m) {return m.buffer[2];}, str(Model m) {return m.emsg[2];}>
+             ,<"Sexe", Radio(Model m) {return <"man", [<"Man", "man">, <"Woman", "woman">]>;}
+                     , str(Model m) {return "";}>
+             ,<"Kind", Checkbox(Model m) {return [<m.kind["aap"], "Aap", "aap">, <m.kind["noot"], "Noot", "noot">, <m.kind["mies"], "Mies", "mies">];}
+                     , str(Model m) {return "";}>
              ];
 
 void fview(Model m) {

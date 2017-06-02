@@ -754,7 +754,7 @@ Figure pushDim(Figure f:rotate(num angle)) {
        }
      root.fig = f;
      root = solveDim(root);
-     println("Root <root>");
+     // println("Root <root>");
      eval(root);
      }
     

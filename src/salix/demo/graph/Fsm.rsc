@@ -42,8 +42,8 @@ Fsm fsm = fsm("CLOSED",
         (
          "CLOSED": <[currentMarker], [<"open", "LISTEN", [formPanel("open", 
              [
-             < "First Name", str(Model m) {return "";}, str(Model m) {return m.emsg;}>
-             ,<"Second Name", str(Model m) {return "";}, str(Model m) {return m.emsg;}>
+             < "First Name", value(Model m) {return "";}, str(Model m) {return m.emsg;}>
+             ,<"Second Name", value(Model m) {return "";}, str(Model m) {return m.emsg;}>
              ])]>]>
         , "LISTEN": <[currentMarker], [<"rcv SYN", "SYN RCVD", [formPanel("rcv SYN", [])]>
                         ,<"send", "SYN SENT",[formPanel("send", [])] >

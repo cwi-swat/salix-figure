@@ -199,7 +199,7 @@ Figure getFigure(void(Fig) block) {
   
   block(<_box, _ellipse, _circle, _ngon, _polygon, _htmlText, _svgText, _rotate, _at, _path, _hcat, _vcat, _overlay, _row, _grid, _html>);
   
-  iprintln(stack[-1].figs[0]);
+  // iprintln(stack[-1].figs[0]);
   return stack[-1].figs[0];
   //addNode(render(eval(stack[-1].figs[0])));
 }

@@ -77,9 +77,10 @@ Figure storm(Model m) {
     div(() {
         h2("Figure using SVG");
         // fig(storm(m));
-        fig(800, 800, (Fig f) {
-              boxExamples(f, m);
-      });
+        //fig(800, 800, (Fig f) {
+        //      boxExample1(f, m);
+        // });
+        fig(gridExample1(m), width = 800, height = 800);
         slider([[
                   [<resizeX, 0, "width:", 0, 700, 50, m.width, "0", "700"> ]
                  ,[<resizeY, 0, "height:", 0, 700, 50, m.height,"0", "700"> ]

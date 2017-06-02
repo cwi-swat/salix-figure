@@ -19,7 +19,7 @@ data Msg
    = resize(int id, real x)
    ;
    
- Model update(Msg msg, Model m) {
+Model update(Msg msg, Model m) {
     switch (msg) {
        case resize(_, real x): m[0].side = x;
        }
@@ -49,7 +49,7 @@ void myView(Model m) {
 
 App[Model] testApp() {
    return app(init, myView, update, 
-    |http://localhost:9104|, |project://salix-figure/src|);
+    |http://localhost:9103|, |project://salix-figure/src|);
    }
    
 public App[Model] c = testApp();
