@@ -52,6 +52,13 @@ alias Points = lrel[num x, num y];
 
 public alias Figures = list[Figure];
 
+int getWidth(TreeNode t) = round(treeNode(Figure fig, _):=t?fig.width:-1);
+int getHeight(TreeNode t) = round(treeNode(Figure fig, _):=t?fig.height:-1);
+
+data TreeNode (
+     num x = 0,
+     num y =0
+     ) = treeNode(Figure fig, list[TreeNode] branches);
 
 // public str strEmpty() {return "";}
        
@@ -188,12 +195,12 @@ public data Figure(
 
    | graph(list[tuple[str, Figure]] nodes = [], list[Edge] edges = [], map[str, NodeProperty] nodeProperty = (), 
      GraphOptions graphOptions = graphOptions(), map[str, str] figId=())
-   | tree(Figure root, list[Figure] figs
-	       ,int xSep = 1, int ySep = 2, str pathColor = "black"
+   | tree(TreeNode root
+	       ,int xSep = 30, int ySep = 30, str pathColor = "black"
 	       ,Orientation orientation = topDown()
 	       ,bool manhattan=false
 // For memory management
-       , int refinement=5, int rasterHeight=150)     
+       , int refinement=2, int rasterHeight=200)     
 //
 //   |pack(Figures fs)
 

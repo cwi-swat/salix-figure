@@ -8,6 +8,7 @@ import salix::Node;
 import salix::lib::Figure;
 import salix::lib::Dagre;
 import salix::lib::ParseHtml;
+import salix::lib::Tree;
 import util::Reflective;
 import Prelude;
 
@@ -967,6 +968,28 @@ void eval(Figure f:at(num x, num y)) {
            salix::SVG::g(fromFigureAttributesToSalix(f)+[(){
                    if (emptyFigure()!:=g) eval(g);
            }]);
+         }
+         
+tuple[num, num] centre(TreeNode t) = <t.x+getWidth(t)/2, t.y+getHeight(t)/2>;
+         
+void placeNodes(TreeNode root) {
+         if (treeNode(Figure f, list[TreeNode] branches):=root) {
+             tuple[num, num] from = centre(root);
+             for (TreeNode b<-branches) {
+                tuple[num, num] to = centre(b);           
+                eval(salix::lib::Figure::path([p_.M(from[0], from[1]), p_.L(to[0], to[1])], lineColor="red"));
+                placeNodes(b);
+             } 
+             eval(at(root.x, root.y, f));           
+         }
+     }
+         
+void eval(Figure f:tree(TreeNode root)) {
+         root=treeLayout(f);
+         svg(svgSize(f)+[() {
+             placeNodes(root);         
+             }
+           ]);
          }
          
 void eval(Figure f:htmlFigure(void() g) ){

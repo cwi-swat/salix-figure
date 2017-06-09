@@ -10,6 +10,7 @@ import Set;
 import List;
 import String;
 import salix::lib::Figure;
+import salix::lib::Tree;
 import salix::lib::LayoutFigure;
 
 
@@ -21,7 +22,8 @@ data Msg
    
 Figure testFigure(Model m) {
     Figure b = box(width=15, height= 15, fillColor="green");
-    TreeNode root  = treeNode(b, [treeNode(b, [], x=20, y=90), treeNode(b, [], x=90, y=90)], x=50, y=20);  
+    // TreeNode root  = treeNode(b, [treeNode(b, [], x=20, y=90), treeNode(b, [], x=90, y=90)], x=50, y=20);
+    TreeNode root  = treeNode(b, [treeNode(b, []), treeNode(b, [])]);    
     return tree(root);
     }
    
