@@ -196,11 +196,11 @@ public data Figure(
    | graph(list[tuple[str, Figure]] nodes = [], list[Edge] edges = [], map[str, NodeProperty] nodeProperty = (), 
      GraphOptions graphOptions = graphOptions(), map[str, str] figId=())
    | tree(TreeNode root
-	       ,int xSep = 30, int ySep = 30, str pathColor = "black"
+	       ,int xSep = 30, int ySep = 50, str pathColor = "black"
 	       ,Orientation orientation = topDown()
 	       ,bool manhattan=false
 // For memory management
-       , int refinement=2, int rasterHeight=200)     
+       , int refinement=1, int rasterHeight=200)     
 //
 //   |pack(Figures fs)
 
@@ -293,7 +293,7 @@ str getColorCode(str color) {
      }
      
  
-lrel[str, str] colors = 
+public lrel[str, str] colors = 
 [
   <"aliceblue","#f0f8ff">,
   <"antiquewhite","#faebd7">,

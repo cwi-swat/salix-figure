@@ -5,11 +5,17 @@ import Prelude;
 
 alias TreeBorder = tuple[int yPosition, list[int] offset];
 
+list[TreeNode] absolutize(num x, num y, list[TreeNode] bs) {
+     return [treeNode(fig, branches, x=f.x+x, y=f.y)|TreeNode f<-bs
+         , treeNode(Figure fig, list[TreeNode] branches):=f];
+     } 
+
 TreeNode adjust(TreeNode root, num refinement) {
     if (treeNode(Figure f, list[TreeNode] branches):=root) {
            f.width /= refinement; f.height /= refinement;
            num x = root.x, y = root.y;
-           return treeNode(f, [adjust(b, refinement)|b<-branches], x=x/refinement, y = y/refinement);
+           list[TreeNode] bs = absolutize(x, y, branches);
+           return treeNode(f, [adjust(b, refinement)|b<-bs], x=x/refinement, y = y/refinement);
            }
     }
     
@@ -37,76 +43,97 @@ void visitPrint(TreeNode root) {
         }
     }
     
-TreeBorder newEdge(int yPosition, int height) = <yPosition, [0|_<-[0..height]]>;
 
+
+
+TreeNode treeLayout(Figure f) {
+
+
+//list[int] leftOffset = [0|_<-[0..f.rasterHeight]];
+//list[int] rightOffset = [0|_<-[0..f.rasterHeight]];
+   
 tuple[TreeBorder, TreeBorder, TreeNode] doShapeTree(TreeNode tree, int height, int yPosition,
-int xSep, int ySep) {
+int xSep, int ySep, TreeBorder left, TreeBorder right) {
    if (treeNode(Figure f, list[TreeNode] branches):=tree) {
-        TreeBorder left, right;
         tuple[TreeBorder, TreeBorder, TreeNode] r;
         if (isEmpty(branches)) {
-             left = newEdge(round(yPosition+getHeight(tree)), height);
-             right = newEdge(round(yPosition+getHeight(tree)), height);
-             }
-        else {
-             list[tuple[TreeBorder left, TreeBorder right, TreeNode tree]] edge = [doShapeTree(
-                   b, height, yPosition+getHeight(tree)+ySep, xSep, ySep)|b<-branches];
-             left = edge[0][0];
-             right = edge[0][1];
-             branches[0].x = 0;
-             for (int i<-[0..size(branches)-1]) {
-                 num overlap = 0;
-                 if (yPosition+getHeight(tree)+ySep < min(edge[i+1][0].yPosition, right.yPosition))
-                 for (int j<-[yPosition+getHeight(tree)+ySep..
-                    min(edge[i+1][0].yPosition, right.yPosition)]) {
-                    overlap = max(overlap, edge[i+1][0].offset[j]+right.offset[j]);
-                    }
-                 println("overlap=<overlap>");
-                 // Push Branches apart
-                 branches[i+1].x = overlap+xSep;
-                 // Adjust left outline
-                 if (left.yPosition+getHeight(tree)+ySep+1 < edge[i+1][0].yPosition+1)
-                 for (int j<-[left.yPosition+getHeight(tree)+ySep+1 ..
-                    edge[i+1][0].yPosition+1]) 
-                         left.offset[j] = edge[i+1][0].offset[j] - branches[i+1].x;
-                  left.yPosition = max(left.yPosition, edge[i+1][0].yPosition);
-                 // Adjust right outline
-                 if (right.yPosition+getHeight(tree)+ySep+1 < edge[i+1][1].yPosition+1)
-                 for (int j<-[right.yPosition+getHeight(tree)+ySep+1 ..
-                    edge[i+1][1].yPosition+1]) 
-                         right.offset[j] = edge[i+1][1].offset[j] +branches[i+1].x;
-                  right.yPosition = max(right.yPosition, edge[i+1][1].yPosition);
-                 }
-                 if (size(branches)>1) {
-                    int centre = round(branches[-1].x/2);
-                    for (int i<-[0..size(branches)]) branches[i].x  -= centre;
-                    // for (int i<-[0..size(branches)])println("Branch <i> <branches[i].x>");
-                    for (int i<-[yPosition..left.yPosition+1]) left.offset[i]+=centre;
-                    for (int i<-[yPosition..right.yPosition+1]) right.offset[i]-=centre;
-                    }     
-             }
+             left = <round(yPosition+getHeight(tree))-1,[0|_<-[0..height]]>;
+             right = <round(yPosition+getHeight(tree))-1,[0|_<-[0..height]]>;
              for (int i <-[yPosition-ySep ..round(yPosition+getHeight(tree))]) {
                 left.offset[i] = round(getWidth(tree)/2);
                 right.offset[i] = round((getWidth(tree)+1)/2);
                 }
-            r= <left, right, treeNode(f, branches, y=yPosition)>;
+             r= <left, right, treeNode(f, [], y=yPosition)>;    
+             }
+        else {
+             list[TreeBorder] leftOutline = [<0, [0|_<-[0..height]]>|_<-branches];
+             list[TreeBorder] rightOutline = [<0, [0|_<-[0..height]]>|_<-branches];
+             list[tuple[TreeBorder left, TreeBorder right, TreeNode tree]] edge = [doShapeTree(
+                   branches[i], height, yPosition+getHeight(tree)+ySep, xSep, ySep
+                   , leftOutline[i],rightOutline[i])|
+                       int i<-[0..size(branches)]];
+             left = edge[0].left;
+             right = edge[0].right;
+             edge[0].tree.x = 0;
+             for (int i<-[0..size(edge)-1]) {
+                 num overlap = 0;
+                 if (yPosition+getHeight(tree)+ySep <= min(edge[i+1].left.yPosition, right.yPosition))
+                 for (int j<-[yPosition+getHeight(tree)+ySep..
+                    min(edge[i+1].left.yPosition, right.yPosition)+1]) {
+                    overlap = max(overlap, edge[i+1].left.offset[j]+right.offset[j]);
+                    // println("j= <j> <overlap> <edge[i+1][0]>");
+                    }
+                 // Push Branches apart
+                 TreeNode p = edge[i+1].tree;
+                 p.x = overlap+xSep;
+                 edge[i+1].tree = p;
+                 // Adjust left outline
+                 if (left.yPosition+1 < edge[i+1].left.yPosition+1)
+                 for (int j<-[left.yPosition+1 .. edge[i+1].left.yPosition+1]) 
+                         left.offset[j] = edge[i+1].left.offset[j] - edge[i+1].tree.x;
+                  left.yPosition = max(left.yPosition, edge[i+1].left.yPosition);
+                 // Adjust right outline
+                 if (yPosition< edge[i+1].right.yPosition+1)
+                 for (int j<-[yPosition .. edge[i+1].right.yPosition+1]) 
+                         right.offset[j] = edge[i+1].right.offset[j] +edge[i+1].tree.x;
+                  right.yPosition = max(right.yPosition, edge[i+1].right.yPosition);
+                 }
+            if (size(edge)>1) {
+                    int centre = round(edge[-1][2].x/2);
+                    for (int i<-[0..size(edge)]) {
+                        TreeNode p = edge[i].tree;
+                        p.x -= centre;
+                        edge[i].tree  = p;
+                        } 
+                    // for (int i<-[0..size(branches)])println("Branch <i> <branches[i].x>");
+                    for (int i<-[yPosition..left.yPosition+1]) left.offset[i]+=centre;
+                    for (int i<-[yPosition..right.yPosition+1]) right.offset[i]-=centre;
+                    }
+             for (int i <-[yPosition-ySep ..round(yPosition+getHeight(tree))]) {
+                left.offset[i] = round(getWidth(tree)/2);
+                right.offset[i] = round((getWidth(tree)+1)/2);
+                }
+             r= <left, right, treeNode(f, [e.tree|e<-edge], y=yPosition)>;     
+             }        
             return r; 
             
         }
         return  <0, 0, treeNode(emptyFigure(), [])>;
    }
-
-TreeNode treeLayout(Figure f) {
+     
     if (tree(TreeNode root):=f) {
       root = adjust(root, f.refinement);
       tuple[TreeBorder, TreeBorder, TreeNode] r = doShapeTree(root, f.rasterHeight, round(f.ySep/f.refinement),
-      round(f.xSep/f.refinement), round(f.ySep/f.refinement));
+      round(f.xSep/f.refinement), round(f.ySep/f.refinement),
+      <round(f.ySep/f.refinement+getHeight(root))-1,[0|_<-[0..f.rasterHeight]]>,
+      <round(f.ySep/f.refinement+getHeight(root))-1,[0|_<-[0..f.rasterHeight]]>
+      );
       root = r[2];
       root = adjust(root, 1.0/f.refinement);
+      // visitPrint(root);
       if (<num minX, num minY> := getMinXMaxY(root)) {
           root = translateX(root, -minX);
           }
-      visitPrint(root);
       return root;
       }
     }

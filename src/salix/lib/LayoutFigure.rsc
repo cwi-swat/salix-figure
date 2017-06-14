@@ -465,6 +465,21 @@ Figure pullDim(Figure f:rotate(num angle, Figure g)) {
     r.lineWidth = f.lineWidth; r.lineColor = f.lineColor;
     return r;
     }
+
+TreeNode newTreeNode(TreeNode root) {
+    return visit(root) {
+        case treeNode(Figure g, list[TreeNode] branches) => treeNode(pullDim(g), branches)
+        }
+    }
+  
+Figure pullDim(Figure f:tree(TreeNode root)) {
+    return tree(newTreeNode(root)
+    ,xSep=f.xSep, ySep=f.ySep,  pathColor=f.pathColor
+	       ,orientation=f.orientation
+	       ,manhattan=f.manhattan
+           ,refinement=f.refinement,rasterHeight=f.rasterHeight);
+    }
+
       
 default Figure pullDim(Figure f) {
      f = adjustParameters(f); 
@@ -980,7 +995,7 @@ void placeNodes(TreeNode root) {
                 eval(salix::lib::Figure::path([p_.M(from[0], from[1]), p_.L(to[0], to[1])], lineColor="red"));
                 placeNodes(b);
              } 
-             eval(at(root.x, root.y, f));           
+             eval(at(round(root.x), round(root.y), f));           
          }
      }
          
