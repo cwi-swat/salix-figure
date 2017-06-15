@@ -151,6 +151,7 @@ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::ellipse()) {
         }
    r+=salix::HTML::style(q);
    // r+=salix::SVG::vectorEffect("non-scaling-stroke");
+   r+=attr("vector-effect", "non-scaling-stroke");
    r+=salix::SVG::d(f.d);
    r+=fromCommonFigureAttributesToSalix(f, q);
    return r; 
@@ -182,6 +183,7 @@ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::polygon(Points cur
         if (startsWith(ref, "endMarker")) q+= <"marker-end", "url(#<ref>)">;            
         }
    r+=salix::HTML::style(q);
+   r+=attr("vector-effect", "non-scaling-stroke");
    // r+=salix::SVG::vectorEffect("non-scaling-stroke");
    r+=salix::SVG::points(points2str(curve));
    r+=fromCommonFigureAttributesToSalix(f, q);
@@ -503,7 +505,7 @@ default Figure pullDim(Figure f) {
         num paddingY= g.padding_top+g.padding_bottom;
         if (f.width<0 && g.width>=0) f.width = f.hgrow*getGrowFactor(f, g)*(g.width + lwi+ lwo)+paddingX;
         if (f.height<0 && g.height>=0) f.height = f.vgrow*getGrowFactor(f, g)*(g.height + lwi + lwo)+paddingY;
-        if (f.width>0 && f.height>0 && (salix::lib::Figure::circle():=f)) {
+        if (f.width>0 && f.height>0 && (salix::lib::Figure::circle():=f ||salix::lib::Figure::ngon():=f )) {
             num width = f.width; num height = f.height;
             f.width = diag(width, height);
             f.height = diag(width, height);
@@ -839,6 +841,7 @@ void eval(Figure f:grid()) {
                    }
                    
 str getViewBox(Figure f) {
+                   if (f.width<0 || f.width<0) return "";
                    return "<f.viewBox[0]>  <f.viewBox[1]>  <f.viewBox[2]>0?f.viewBox[2]:f.width> <f.viewBox[3]>0?f.viewBox[3]:f.height>";
                    }
      
@@ -869,14 +872,15 @@ str getViewBox(Figure f) {
                     } 
                                       
 void eval(Figure f:path(list[str] _)) {
-                   list[str] refs = addMarkers(f);           
-                   salix::SVG::svg(salix::SVG::viewBox(getViewBox(f)), preserveAspectRatio("none"), (){
+                   list[str] refs = addMarkers(f);   
+                   list[Attr] extra = isEmpty(getViewBox(f))?[]:[salix::SVG::viewBox(getViewBox(f))];        
+                   salix::SVG::svg(extra +[preserveAspectRatio("none"), (){
                               salix::SVG::g(salix::SVG::transform(f.transform),
                                  (){                        
                                     salix::SVG::path(fromFigureAttributesToSalix(f, refs));
                                    }
                               );
-                       }); 
+                       }]); 
                    }
                    
 void eval(Figure f:path()) {
@@ -905,15 +909,15 @@ void eval(Figure f:polyline(Points _)) {
                    }
                    
  void eval (Figure f:ngon()) {
-                   num shift = 1.0;
+                   // num shift = 1.0;
                    num lw = f.lineWidth/cos(PI()/f.n); 
                    if (lw<0) lw = 0;
                    if (f.r<0) f.r = f.width/2;
-                   salix::SVG::g(salix::SVG::transform(t_.t(lw/2,lw/2)+"scale(<toP(f.r)>,<toP(f.r)>) "+t_.t(shift, shift)+t_.r(f.angle, 0, 0)),
+                   salix::SVG::g(salix::SVG::transform(t_.t(lw/2,lw/2)+t_.r(f.angle, 0, 0)),
                           (){                        
-                            list[str] pth = [p_.M(-1, 0)];
-                            pth += [p_.L(-cos(phi), sin(phi))|num phi<-[2*PI()/f.n, 4*PI()/f.n..2*PI()]];
-                            pth += [p_.Z()];                     
+                            list[str] pth = [p_.M(0, f.r)];
+                            pth += [p_.L(-f.r*cos(phi)+f.r, f.r*sin(phi)+f.r)|num phi<-[2*PI()/f.n, 4*PI()/f.n..2*PI()]];
+                            pth += [p_.Z()];                  
                              salix::SVG::path(fromFigureAttributesToSalix(f, pth));
                             }); 
                    if (emptyFigure()!:=f.fig) innerFig(f, f.fig)();    

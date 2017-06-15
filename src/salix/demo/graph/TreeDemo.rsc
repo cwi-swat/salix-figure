@@ -32,14 +32,30 @@ data Msg
    ;
    
 int idx = 0;
+
+Figure treeKnod(tuple[num, num] siz, str txt) {
+    int nc = arbInt(3);
+    switch(nc) {
+      case 0: return salix::lib::Figure::box(size=siz, fig = htmlText(txt, fontSize=10, size=<20, 20>)
+           ,fillColor = "antiqueWhite", lineColor = "brown", fillOpacity=0.7);
+      case 1: return salix::lib::Figure::circle(size=siz, fig = htmlText(txt, fontSize=10, size=<20, 20>)
+           ,fillColor = "lightskyblue", lineColor = "brown", fillOpacity=0.7);
+      case 2: return salix::lib::Figure::ngon(n=5, lineWidth =1, size=siz, fig = htmlText(txt, fontSize=10, size=<20, 20>)
+           ,fillColor = "lightcoral", lineColor = "brown", fillOpacity=0.7);
+      }
+      return emptyFigure();
+    }
    
 public TreeNode genTree(int maxDepth, int minKids, int maxKids, int minX, int minY, int maxX, int maxY){
     idx = idx+1;
+    /*
 	Figure root = salix::lib::Figure::circle(fig = htmlText("<idx>", fontSize=10, size=<20, 20>)
 	// , fillColor=colors[arbInt(size(colors))][0]
 	, fillColor = "antiqueWhite", lineColor = "brown"
 	, size=<minX + arbInt(maxX-minX), minY + arbInt(maxY -minY)>);
 	//println("genTree1 <minX + arbInt(maxX-minX)> <minY + arbInt(maxY -minY)>");
+	*/
+	Figure root = treeKnod(<minX + arbInt(maxX-minX), minY + arbInt(maxY -minY)>, "<idx>");
 	if(maxDepth  <= 0 || (maxDepth<2 && arbInt(100) <= 50)){return treeNode(root,[]); }
 	int nr = arbInt(maxKids-minKids) + minKids;	
 	//println("genTree2:<nr>");
