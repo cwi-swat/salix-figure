@@ -49,7 +49,7 @@ void testFigure(Fig f, Model m) =
                              str path2 = p_.M(0, -cos(m[1].x));
                              path2+=intercalate(" ", [p_.L(m[1].f*2*PI()*i/n, -cos(2*PI()*(i/n)+m[1].x))|num i<-[1, 2..n+1]]);
                              f.path(d(path2), viewBox(<0, -1, 2*PI(), 2>), fillColor("none"), lineColor("blue"));
-                             
+                             // f.at(500, 150, (){f.circle(r(20), fillColor("red"));});
                           });              
                  });
            f.hcat(FProp::height(30)

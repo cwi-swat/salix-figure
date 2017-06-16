@@ -780,7 +780,12 @@ void eval(emptyFigure()) {;}
 
 void eval(Figure f:root()) {svg(svgSize(f)+[() {eval(f.fig);}]);}
 
-void eval(Figure f:overlay()) {svg(svgSize(f)+[(){for (g<-f.figs) {svg(svgSize(g)+[() {eval(g);}]);}}]);}
+void eval(Figure f:overlay()) {
+//list[Attr] extra = (isEmpty(getViewBox(f))||f.width<0||f.height<0)?[]:[preserveAspectRatio("none"),
+//                   salix::SVG::viewBox(getViewBox(f))];  
+ //     println(extra); 
+      svg(svgSize(f)+[(){for (g<-f.figs) {svg(svgSize(g)/*+extra*/+[() {eval(g);}]);}}]);
+}
 
 void eval(Figure f:box()) {\rect(fromFigureAttributesToSalix(f));if (emptyFigure()!:=f.fig) innerFig(f, f.fig)();}
 
@@ -873,8 +878,9 @@ str getViewBox(Figure f) {
                                       
 void eval(Figure f:path(list[str] _)) {
                    list[str] refs = addMarkers(f);   
-                   list[Attr] extra = isEmpty(getViewBox(f))?[]:[salix::SVG::viewBox(getViewBox(f))];        
-                   salix::SVG::svg(extra +[preserveAspectRatio("none"), (){
+                   list[Attr] extra = isEmpty(getViewBox(f))?[]:[preserveAspectRatio("none"),
+                   salix::SVG::viewBox(getViewBox(f))];        
+                   salix::SVG::svg(extra +[ (){
                               salix::SVG::g(salix::SVG::transform(f.transform),
                                  (){                        
                                     salix::SVG::path(fromFigureAttributesToSalix(f, refs));
