@@ -79,7 +79,7 @@ alias Fig = tuple[
   FigF1 rotate,
   FigF2 at, 
   
-  //FigF shape, // needs nesting with start/mid/end marker
+  
   FigF path, // needs nesting with start/mid/end marker
   
   FigF hcat,

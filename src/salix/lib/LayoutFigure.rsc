@@ -95,6 +95,8 @@ list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::rotate(num angle, 
    
 list[value] fromFigureAttributesToSalix(f:salix::lib::Figure::at(num x, num y, Figure g)) {
    list[value] r =[];
+   if (f.width>=0) r+= salix::SVG::width("<f.width>"); 
+   if (f.height>=0) r+= salix::SVG::height("<f.height>");
    r+= salix::SVG::transform("translate(<toP(x)>, <toP(y)>)");         
    return r; 
    }
@@ -429,15 +431,17 @@ Figure pullDim(Figure f:svgText(_)) {
     }
     
 Figure pullDim(Figure f:at(num x, num y)) {
+    f = adjustParameters(f);
     Figure g = f.fig;
-    return pullDim(at(x, y, g));
+    return pullDim(at(x, y, g
+    , width=f.width, height = f.height, viewBox = f.viewBox));
     }
     
 Figure pullDim(Figure f:at(num x, num y, Figure g)) {
     f = adjustParameters(f);
     g = pullDim(g);
-    Figure r = at(x, y, g);
-    r.width = f.width; r.height = f.height;
+    Figure r = at(x, y, g, width=f.width, height = f.height, viewBox = f.viewBox);
+    // r.width = f.width; r.height = f.height;
     if (r.width<0&& g.width>=0) r.width = g.width + x;
     if (r.height<0&& g.height>=0) r.height = g.height + y;
     r.lineWidth = g.lineWidth;
@@ -689,7 +693,7 @@ Figure pushDim(Figure f:rotate(num angle)) {
     
  Figure pushDim(Figure f:at(num x, num y)) {
     Figure g = f.fig;
-    return pushDim(at(x, y, g));
+    return pushDim(at(x, y, g, width=f.width, height=f.height, viewBox = f.viewBox));
     }
     
  Figure pushDim(Figure f:at(num x, num y, Figure g)) {
@@ -704,7 +708,7 @@ Figure pushDim(Figure f:rotate(num angle)) {
          }
     if (g.lineWidth<0) g.lineWidth = f.lineWidth;
     g = pushDim(g);
-    Figure r = at(x+shiftX, y+shiftY, g);  
+    Figure r = at(x+shiftX, y+shiftY, g, viewBox = f.viewBox);  
     r.width = f.width;
     r.height = f.height;
     r.lineWidth = f.lineWidth;
@@ -781,10 +785,7 @@ void eval(emptyFigure()) {;}
 void eval(Figure f:root()) {svg(svgSize(f)+[() {eval(f.fig);}]);}
 
 void eval(Figure f:overlay()) {
-//list[Attr] extra = (isEmpty(getViewBox(f))||f.width<0||f.height<0)?[]:[preserveAspectRatio("none"),
-//                   salix::SVG::viewBox(getViewBox(f))];  
- //     println(extra); 
-      svg(svgSize(f)+[(){for (g<-f.figs) {svg(svgSize(g)/*+extra*/+[() {eval(g);}]);}}]);
+      svg(svgSize(f)+[(){for (g<-f.figs) {svg(svgSize(f)/*+getViewBox(g)*/+[() {eval(g);}]);}}]);
 }
 
 void eval(Figure f:box()) {\rect(fromFigureAttributesToSalix(f));if (emptyFigure()!:=f.fig) innerFig(f, f.fig)();}
@@ -845,9 +846,12 @@ void eval(Figure f:grid()) {
                    foreignObject(foreignObjectArgs+[(){salix::HTML::table(fromTableModelToProperties(f)+[tableRows(f)]);}]);
                    }
                    
-str getViewBox(Figure f) {
-                   if (f.width<0 || f.width<0) return "";
-                   return "<f.viewBox[0]>  <f.viewBox[1]>  <f.viewBox[2]>0?f.viewBox[2]:f.width> <f.viewBox[3]>0?f.viewBox[3]:f.height>";
+list[Attr] getViewBox(Figure f) {
+                   if (f.width<0 || f.width<0 || f.viewBox[2]<0 || f.viewBox[3]<0) return [];
+                   return 
+                   [salix::SVG::viewBox("<f.viewBox[0]>  <f.viewBox[1]>  <f.viewBox[2]> <f.viewBox[3]>")
+                   ,preserveAspectRatio("none")
+                   ];
                    }
      
  list[str] addMarkers(Figure f) {             
@@ -863,10 +867,12 @@ str getViewBox(Figure f) {
                    if (!isEmpty(r))
                             salix::SVG::defs(() {
                             for (tuple[Figure fig, str lab] d<-r) {
-                            salix::SVG::marker(salix::SVG::id(d.lab), markerWidth("<d[0].width>"), markerHeight("<d[0].height>"),
+                            salix::SVG::marker([
+                                salix::SVG::id(d.lab), markerWidth("<d[0].width>"), markerHeight("<d[0].height>"),
                               refX("<d[0].width/2.0>"), refY("<d[0].height/2.0>"), orient("auto"), preserveAspectRatio("none"),
-                              salix::SVG::viewBox(getViewBox(d.fig)), 
-                              salix::SVG::markerUnits("userSpaceOnUse"),
+                             
+                              salix::SVG::markerUnits("userSpaceOnUse")]+
+                                    getViewBox(d.fig), 
                               () {                                                                     
                                  eval(d.fig);
                                  });
@@ -877,10 +883,8 @@ str getViewBox(Figure f) {
                     } 
                                       
 void eval(Figure f:path(list[str] _)) {
-                   list[str] refs = addMarkers(f);   
-                   list[Attr] extra = isEmpty(getViewBox(f))?[]:[preserveAspectRatio("none"),
-                   salix::SVG::viewBox(getViewBox(f))];        
-                   salix::SVG::svg(extra +[ (){
+                   list[str] refs = addMarkers(f);           
+                   salix::SVG::svg(getViewBox(f) +[ (){
                               salix::SVG::g(salix::SVG::transform(f.transform),
                                  (){                        
                                     salix::SVG::path(fromFigureAttributesToSalix(f, refs));
@@ -891,27 +895,29 @@ void eval(Figure f:path(list[str] _)) {
                    
 void eval(Figure f:path()) {
                    list[str] refs = addMarkers(f);           
-                   salix::SVG::svg(salix::SVG::viewBox(getViewBox(f)), preserveAspectRatio("none"), (){
+                   salix::SVG::svg(getViewBox(f)+ [(){
                               salix::SVG::g(salix::SVG::transform(f.transform),
                                  (){                        
                                     salix::SVG::path(fromFigureAttributesToSalix(f, refs));
                                    }
                               );
-                       }); 
+                       }]); 
                    }
                    
  void eval(Figure f:polygon(Points _)) {   
                    list[str] refs = addMarkers(f);      
-                   salix::SVG::svg(salix::SVG::viewBox(getViewBox(f)), preserveAspectRatio("none"), (){                                                
+                   salix::SVG::svg(getViewBox(f)+
+                      [ (){                                                
                              salix::SVG::polygon(fromFigureAttributesToSalix(f, refs));
-                       }); 
+                       }]); 
                    }
                    
 void eval(Figure f:polyline(Points _)) {
                    list[str] refs = addMarkers(f);         
-                   salix::SVG::svg(salix::SVG::viewBox(getViewBox(f)), preserveAspectRatio("none"), (){                                                
+                   salix::SVG::svg(getViewBox(f)+
+                      [ (){                                                
                              salix::SVG::polyline(fromFigureAttributesToSalix(f, refs));
-                       }); 
+                       }]); 
                    }
                    
  void eval (Figure f:ngon()) {
@@ -974,9 +980,10 @@ void eval(Figure f:salix::lib::Figure::rotate(num angle, Figure g)) {
            }]);
        }
 
-void eval(Figure f:at(num x, num y, Figure g)) {
-           salix::SVG::g(fromFigureAttributesToSalix(f)+[(){
+void eval(Figure f:at(num x, num y, Figure g)) { 
+          svg(svgSize(f)+ getViewBox(f)+ [() {salix::SVG::g(fromFigureAttributesToSalix(f)+[(){
                    if (emptyFigure()!:=g) eval(g);
+           }]);
            }]);
          }
          
