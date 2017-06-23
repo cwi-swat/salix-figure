@@ -99,7 +99,7 @@ void myView(Model m) {
     div(() {
         h2("Figure using SVG");
         slider(sliderBars);  
-        fig(testFigure(m), width=800, height = 800);
+        fig(testFigure(m), width=1600, height = 800);
         //fig(200, 200, (Fig f) {
         //    testFigure(f, m);
         //});

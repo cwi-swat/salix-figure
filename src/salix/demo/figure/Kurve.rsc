@@ -96,12 +96,13 @@ void testFigure(Fig f, Model m) =
                              //f.overlay(/*viewBox(<-2, -2, 4, 4>),*/ size(<600, 600>),() {
                              f.at(m.pos1[0]-r, m.pos1[1]-r, viewBox(<-2, -2, 4, 4>), size(<600, 600>), (){f.circle(FProp::r(r),  fillColor("red"));});
                              f.at(m.pos2[0]-r, m.pos2[1]-r, viewBox(<-2, -2, 4, 4>), size(<600, 600>), (){f.circle(FProp::r(r),  fillColor("blue"));});
-                             f.at(p3[0]-r, p3[1]-r, viewBox(<-2, -2, 4, 4>), size(<600, 600>), (){f.circle(FProp::r(r),  fillColor("black"));}); 
+                             f.at(p3[0]-r, p3[1]-r, viewBox(<-2, -2, 4, 4>), size(<600, 600>), (){f.circle(FProp::r(r),  lineColor("black")
+                                                 , fillColor("none"), lineWidth(0.02));}); 
                              f.at(p3[0]-r, -p3[1]-r, viewBox(<-2, -2, 4, 4>), size(<600, 600>), (){f.circle(FProp::r(r),  fillColor("green"));});       
                              //}); 
                              str path3 = p_.M(-2, cline(m, -2));  
                              path3 += p_.L(4, cline(m, 4)); 
-                             f.path(d(path3), viewBox(<-2, -2, 4, 4>),  size(<600, 600>), lineColor("red"));                                        
+                             f.path(d(path3), viewBox(<-2, -2, 4, 4>),  size(<600, 600>), lineColor("grey"));                                        
                             });
                     });
           });
@@ -113,10 +114,16 @@ void myView(Model m) {
         fig(800, 800, (Fig f) {
               testFigure(f, m);
          }); 
-         button(onClick(next1()),"Next first point ");
-         button(onClick(next2()),"Next second point");
-         button(onClick(prev1()),"Previous first point ");
-         button(onClick(prev2()),"Previous second point");
+         table((){
+           tr((){
+              td((){button(onClick(next1()),"Next first point ");});
+              td((){button(onClick(next2()),"Next second point ");});
+              });
+           tr((){
+              td((){button(onClick(prev1()),"Previous first point ");});
+              td((){button(onClick(prev2()),"Previous second point");});
+              });   
+           });
         });
     }
     

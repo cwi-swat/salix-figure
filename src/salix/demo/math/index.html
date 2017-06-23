@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<script src="/salix/salix.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" 
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script src="/salix/lib/math.js"></script>
+<script>
+  var salix = new Salix();
+  registerMath(salix);
+  $(document).ready(salix.start);
+</script>
+<style  id="css">
+/* .description {overflow:auto} */
+.node div { 
+  font-weight: 300; 
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serf; 
+  font-size: 20px; 
+  color:black;
+} 
+
+button { 
+  height:60px;
+  //font-weight: 300; 
+  //font-family: "Helvetica Neue", Helvetica, Arial, sans-serf; 
+  font-size: 20px; 
+  color:black;
+} 
+
+.node {
+  /*stroke: #333;*/
+  fill: #fff;
+  stroke-width: 0px;
+  paddingLeft: 0;
+  paddingRight:0;
+}
+.edgePath path {
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+polygon, polyline, path {
+  vector-effect: non-scaling-stroke;
+  }
+</style>
+<body>
+<div class="container">
+  `c^2`
+  <div id="root">
+  </div>
+</div>
+</body>
+
+</html>
