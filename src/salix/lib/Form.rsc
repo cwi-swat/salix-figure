@@ -47,10 +47,11 @@ void formRow(&T m, Msg(int, str) msg, FormEntry[&T] fe, int id) {
                    }
                   else if (Radio s:=v) {
                     str idx = getUniqueId(s);
-                    div(salix::HTML::id(idx), () 
+                    div(salix::HTML::id(idx), salix::HTML::class("radio"),() 
                        {
                        for (tuple[str, str] line<-s.line) {
-                         label(salix::HTML::\for(idx+"_"+line[1]), line[0]);
+                         div(() {
+                         
                          input(salix::HTML::\type("radio")
                              , salix::HTML::size("10")
                              , salix::HTML::name(idx)
@@ -58,15 +59,17 @@ void formRow(&T m, Msg(int, str) msg, FormEntry[&T] fe, int id) {
                              , salix::HTML::\id(idx+"_"+line[1])
                              , salix::HTML::checked(line[1]==s.current)
                              , onClick(partial(msg, id)(line[1])));
+                             label(salix::HTML::\for(idx+"_"+line[1]), line[0]);
+                             });
                              }
                        });
                     }
                     else if (Checkbox s:=v) {
                     str idx = getUniqueId(s);
-                    div(salix::HTML::id(idx), () 
+                    div(salix::HTML::id(idx), salix::HTML::class("checkbox"), () 
                        {
                        for (tuple[bool checked , str label , str val] line<-s) {
-                       label(salix::HTML::\for(idx+"_"+line.val), line.label);
+                        div(() {
                          input(salix::HTML::\type("checkbox")
                              , salix::HTML::size("10")
                              , salix::HTML::name(idx)
@@ -74,6 +77,8 @@ void formRow(&T m, Msg(int, str) msg, FormEntry[&T] fe, int id) {
                              , salix::HTML::\id(line.val)
                              , salix::HTML::checked(line.checked)
                              , onClick(partial(msg, id)(line.val)));
+                          label(salix::HTML::\for(idx+"_"+line.val), line.label);
+                            });
                              }
                        });
                     }

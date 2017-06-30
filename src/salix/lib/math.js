@@ -77,10 +77,18 @@ function registerMath(salix) {
 	function nothing() {
 		return {type: 'nothing'};
 	}
+	
 	salix.Commands.rerun = function (args) {
 		// alert("rerun:"+args["id"]+":"+args["txt"]);
 		var math = document.getElementById("a"+args["id"]);	
 		MathJax.Hub.Queue(["Typeset",MathJax.Hub, math]);	
+		return nothing();
+	};
+	
+	salix.Commands.blur = function (args) {
+		// alert("rerun:"+args["id"]+":"+args["txt"]);
+		var dom = document.getElementById("a_"+args["id"]+"_"+args["c"]);	
+		dom.blur();	
 		return nothing();
 	};
 	

@@ -22,15 +22,19 @@ data Msg
   ;
   
   
-Model finit() = <[<"a", "2", "`c^3`">|_<-[0..2]], [true, true]>;
+Model finit() = <[<"c", "2", "`c^2`">, <"c", "2", "`c_2`">], [true, true]>;
 
 Model fupdate(Msg msg, Model m) {
   
   switch (msg) {
-    case ok(int id, int c, str txt): {
-           m.term[id][c] = txt; 
+    case ok(int id, int c, str txt): { 
            m.result[id] = false;
            m.term[id][2] = "`<m.term[id][0]><id==0?"^":"_"><m.term[id][1]>`";
+           if (size(txt)>1 && txt[-1]==" ") {
+              do(blur(finished(id), id, c));
+              txt = txt[0..-1];
+              }
+           m.term[id][c] = txt; 
            } 
     case leave(int id, int c): {
        m.result[id] = true;
@@ -50,10 +54,13 @@ Msg(str) partial(Msg(int, int, str) f, int p, int c) {return Msg(str y){return f
 Msg(str) partial(Msg(int, str) f, int p) {return Msg(str y){return f(p, y);};}
 
 void enter(str s, int id, int c) =
-input(salix::HTML::\type("text"), salix::HTML::size("10"), salix::HTML::\value(s)
-                  ,onInput(partial(ok, id, c)), onMouseLeave(leave(id, c)));
+input(salix::HTML::id("a_<id>_<c>"), salix::HTML::\type("text")
+                  , salix::HTML::size("10")
+                  , salix::HTML::\value(s)
+                  , salix::HTML::style([<"width", "<max(size(s)*8, 2)>px">])
+                  ,onInput(partial(ok, id, c)), onBlur(leave(id, c)));
                   
-
+/*
 void fview(Model m) {        
   div(() { 
     h2("Demonstration Mathjax"); 
@@ -91,6 +98,48 @@ void fview(Model m) {
          }                     
   );
 }
+*/
+
+
+void fview(Model m) {        
+  div(() { 
+    h2("Demonstration Mathjax"); 
+         div(()
+           {
+           span(
+           "If you enter "
+           );
+           enter(m.term[0][0], 0, 0);    
+           span("^");
+           enter(m.term[0][1], 0, 1);
+           span("then the result ");
+           if (m.result[0]) span(() {span(id("a0"), "` `<m.term[0][2]>` `");});
+           else span("?");
+           span("will be displayed");
+           } );
+           
+           div(()
+           {
+           span(
+           "If you enter "
+           );
+           enter(m.term[1][0], 1, 0);    
+           span("_");
+           enter(m.term[1][1], 1, 1);
+           span("then the result ");
+           if (m.result[1]) span(() {span(id("a1"), "` `<m.term[1][2]>` `");});
+           else span("?");
+           span("will be displayed");
+           
+           } );                                 
+  });
+}
+
+/*
+void fview(Model m) {        
+  div("Lesser then? &lt;");
+  }
+*/  
 
 App[Model] formApp()
   = app(finit, fview, fupdate, |http://localhost:9103|, |project://salix-figure/src|
