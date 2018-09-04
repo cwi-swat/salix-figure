@@ -131,6 +131,7 @@ public data Figure(
 	
 	emptyFigure()
    | root(Figure fig= emptyFigure())
+
    | htmlFigure (void() f)	
    | htmlText(str text, str overflow = "hidden") // text label html
    | svgText(str text, str overflow = "hidden") // text label svg
@@ -140,9 +141,8 @@ public data Figure(
    | box(Figure fig=emptyFigure())      	// rectangular box with inner element
    
    | ellipse(num cx = -1, num cy = -1, num rx=-1, num ry=-1, Figure fig=emptyFigure())
-   
+  
    | circle(num cx = -1, num cy = -1, num r=-1, Figure fig=emptyFigure())
-
 // regular polygon   
    | ngon(int n=3, num r=-1, num angle = 0, Figure fig=emptyFigure())
    | polygon(Points points
@@ -183,14 +183,13 @@ public data Figure(
    | grid(list[Figures] figArray = [], Figures figs=[]) 	// grid of figures
 
 // Figure transformations
-
-   | at(num x, num y, Figure fig)
+   | at(num x, num y, Figure fig1)
    
    | at(num x, num y, Figure fig=emptyFigure())
    
-   | rotate(num angle, Figure fig=emptyFigure(), num cx = -1, num cy = -1, num r=-1) // in Radians
+   | rotate(num angle1, Figure fig=emptyFigure(), num cx = -1, num cy = -1, num r=-1) // in Radians
    
-   | rotate(num angle, Figure fig, num cx = -1, num cy = -1, num r=-1) // in Radians
+   | rotate(num angle1, Figure fig1, num cx = -1, num cy = -1, num r=-1) // in Radians
 
 
    | graph(list[tuple[str, Figure]] nodes = [], list[Edge] edges = [], map[str, NodeProperty] nodeProperty = (), 
@@ -200,7 +199,8 @@ public data Figure(
 	       ,Orientation orientation = topDown()
 	       ,bool manhattan=false
 // For memory management
-       , int refinement=1, int rasterHeight=200)     
+       , int refinement=1, int rasterHeight=200)  
+   
 //
 //   |pack(Figures fs)
 

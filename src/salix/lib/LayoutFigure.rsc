@@ -376,7 +376,7 @@ Figure adjustParameters(Figure f) {
     if (f.hgrow<0) f.hgrow = f.grow;
     if (f.vgrow<0) f.vgrow = f.grow;
     if (f.hshrink<0) f.hshrink = f.shrink;
-    if (f.vshrink<0) f.vshrink = f.shrink;  
+    if (f.vshrink<0) f.vshrink = f.shrink; 
     return f;
     }
       
@@ -769,15 +769,14 @@ Figure pushDim(Figure f:rotate(num angle)) {
      }
      
  public void fig(Figure f, num width = -1, num height = -1) {
-     Figure root = root(width = width, height = height);
-     if (root.size != <0, 0>) {
-       if (root.width<0) f.width = f.size[0];
-       if (root.height<0) f.height = f.size[1];
+     Figure root1 = root(width = width, height = height, fig = f);
+     if (root1.size != <0, 0>) {
+       if (root1.width<0) f.width = f.size[0];
+       if (root1.height<0) f.height = f.size[1];
        }
-     root.fig = f;
-     root = solveDim(root);
+     root1 = solveDim(root1);
      // println("Root <root>");
-     eval(root);
+     eval(root1);
      }
     
 void eval(emptyFigure()) {;}
